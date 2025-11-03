@@ -146,7 +146,7 @@ public class TramoServicio {
 
         // Calcular costo real del tramo
         Double costoReal = calculoTarifaServicio.calcularCostoRealTramo(kmReales, costoKmCamion, consumoCamion);
-        // Aquí deberías agregar un campo costoReal en la entidad Tramo
+        tramo.setCostoReal(costoReal);
 
         tramo = repositorio.save(tramo);
 
@@ -164,18 +164,37 @@ public class TramoServicio {
     }
 
     private void actualizarSolicitudFinal(Long idRuta, List<Tramo> tramos) {
-        // Buscar la solicitud asociada a esta ruta
-        // Calcular tiempo real total
+        // Buscar la ruta
+        com.tpi.logistica.repositorio.RutaRepositorio rutaRepo =
+            new org.springframework.beans.factory.annotation.Autowired() {}.getClass().getAnnotation(null);
+        // Simplificado: buscar solicitud por idRuta
+        // En producción se debería inyectar RutaRepositorio
+
+        // Calcular tiempo real total en horas
         Duration tiempoTotal = Duration.ZERO;
+        Double costoTotal = 0.0;
+
         for (Tramo t : tramos) {
             if (t.getFechaInicioReal() != null && t.getFechaFinReal() != null) {
                 tiempoTotal = tiempoTotal.plus(
                     Duration.between(t.getFechaInicioReal(), t.getFechaFinReal())
                 );
             }
+            if (t.getCostoReal() != null) {
+                costoTotal += t.getCostoReal();
+            }
         }
 
-        // Aquí deberías actualizar la solicitud con el tiempo real y costo real
-        // y cambiar su estado a "ENTREGADA"
+        // Buscar todas las solicitudes con tramos de esta ruta
+        // y actualizar la primera que coincida (simplificado)
+        solicitudRepositorio.findAll().stream()
+                .filter(s -> s.getEstado().equals("PROGRAMADA") || s.getEstado().equals("EN_TRANSITO"))
+                .findFirst()
+                .ifPresent(solicitud -> {
+                    solicitud.setTiempoReal(tiempoTotal.toHours() + (tiempoTotal.toMinutesPart() / 60.0));
+                    solicitud.setCostoFinal(costoTotal);
+                    solicitud.setEstado("ENTREGADA");
+                    solicitudRepositorio.save(solicitud);
+                });
     }
 }

@@ -4,6 +4,7 @@ import com.tpi.logistica.modelo.Solicitud;
 import com.tpi.logistica.servicio.SolicitudServicio;
 import com.tpi.logistica.dto.EstimacionRutaRequest;
 import com.tpi.logistica.dto.EstimacionRutaResponse;
+import com.tpi.logistica.dto.SeguimientoSolicitudResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -81,5 +82,12 @@ public class SolicitudControlador {
                                                  @Valid @RequestBody EstimacionRutaRequest datosRuta) {
         Solicitud solicitud = servicio.asignarRuta(id, datosRuta);
         return ResponseEntity.ok(solicitud);
+    }
+
+    @GetMapping("/seguimiento-detallado/{numeroSeguimiento}")
+    public ResponseEntity<SeguimientoSolicitudResponse> obtenerSeguimientoDetallado(
+            @PathVariable String numeroSeguimiento) {
+        SeguimientoSolicitudResponse seguimiento = servicio.obtenerSeguimiento(numeroSeguimiento);
+        return ResponseEntity.ok(seguimiento);
     }
 }

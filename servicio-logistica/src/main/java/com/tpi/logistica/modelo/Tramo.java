@@ -57,5 +57,7 @@ public class Tramo {
 
     @Column(name = "fecha_fin_real")
     private LocalDateTime fechaFinReal;
-}
 
+    @Column(name = "costo_real")
+    private Double costoReal;
+}

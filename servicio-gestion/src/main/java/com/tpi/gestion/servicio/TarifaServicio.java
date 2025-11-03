@@ -45,4 +45,16 @@ public class TarifaServicio {
     public void eliminar(Long id) {
         repositorio.deleteById(id);
     }
+
+    /**
+     * Busca la tarifa aplicable para un contenedor según su peso y volumen.
+     */
+    public Optional<Tarifa> buscarTarifaAplicable(Double peso, Double volumen) {
+        return repositorio.findAll().stream()
+                .filter(t ->
+                    peso >= t.getRangoPesoMin() && peso <= t.getRangoPesoMax() &&
+                    volumen >= t.getRangoVolumenMin() && volumen <= t.getRangoVolumenMax()
+                )
+                .findFirst();
+    }
 }

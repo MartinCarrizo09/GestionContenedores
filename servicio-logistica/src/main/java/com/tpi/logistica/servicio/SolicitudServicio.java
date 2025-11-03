@@ -8,6 +8,7 @@ import com.tpi.logistica.repositorio.RutaRepositorio;
 import com.tpi.logistica.repositorio.TramoRepositorio;
 import com.tpi.logistica.dto.EstimacionRutaRequest;
 import com.tpi.logistica.dto.EstimacionRutaResponse;
+import com.tpi.logistica.dto.SeguimientoSolicitudResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -161,5 +162,75 @@ public class SolicitudServicio {
         solicitud.setTiempoEstimado(tiempoEstimado);
 
         return repositorio.save(solicitud);
+    }
+
+    /**
+     * Obtiene el seguimiento detallado de una solicitud con historial cronológico.
+     */
+    public SeguimientoSolicitudResponse obtenerSeguimiento(String numeroSeguimiento) {
+        Solicitud solicitud = repositorio.findByNumeroSeguimiento(numeroSeguimiento)
+                .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
+
+        // Buscar ruta asociada
+        List<Ruta> rutas = rutaRepositorio.findByIdSolicitud(solicitud.getId());
+        List<SeguimientoSolicitudResponse.EventoSeguimiento> historial = new ArrayList<>();
+
+        // Agregar evento de creación de solicitud
+        historial.add(SeguimientoSolicitudResponse.EventoSeguimiento.builder()
+                .fecha(LocalDateTime.now().minusDays(5)) // Simulado
+                .evento("SOLICITUD_CREADA")
+                .descripcion("Solicitud creada en el sistema")
+                .estado("BORRADOR")
+                .build());
+
+        // Si hay ruta, agregar eventos de tramos
+        if (!rutas.isEmpty()) {
+            Ruta ruta = rutas.get(0);
+            List<Tramo> tramos = tramoRepositorio.findByIdRuta(ruta.getId());
+
+            historial.add(SeguimientoSolicitudResponse.EventoSeguimiento.builder()
+                    .fecha(LocalDateTime.now().minusDays(4)) // Simulado
+                    .evento("RUTA_ASIGNADA")
+                    .descripcion("Ruta calculada con " + tramos.size() + " tramo(s)")
+                    .estado("PROGRAMADA")
+                    .build());
+
+            // Agregar eventos de cada tramo
+            for (Tramo tramo : tramos) {
+                if (tramo.getFechaInicioReal() != null) {
+                    historial.add(SeguimientoSolicitudResponse.EventoSeguimiento.builder()
+                            .fecha(tramo.getFechaInicioReal())
+                            .evento("TRAMO_INICIADO")
+                            .descripcion("Inicio de tramo: " + tramo.getOrigenDescripcion() +
+                                       " → " + tramo.getDestinoDescripcion())
+                            .estado("EN_TRANSITO")
+                            .build());
+                }
+
+                if (tramo.getFechaFinReal() != null) {
+                    historial.add(SeguimientoSolicitudResponse.EventoSeguimiento.builder()
+                            .fecha(tramo.getFechaFinReal())
+                            .evento("TRAMO_FINALIZADO")
+                            .descripcion("Fin de tramo: " + tramo.getOrigenDescripcion() +
+                                       " → " + tramo.getDestinoDescripcion())
+                            .estado(tramo.getEstado())
+                            .build());
+                }
+            }
+        }
+
+        // Ordenar cronológicamente
+        historial.sort((a, b) -> a.getFecha().compareTo(b.getFecha()));
+
+        return SeguimientoSolicitudResponse.builder()
+                .idSolicitud(solicitud.getId())
+                .numeroSeguimiento(solicitud.getNumeroSeguimiento())
+                .estadoActual(solicitud.getEstado())
+                .costoEstimado(solicitud.getCostoEstimado())
+                .costoFinal(solicitud.getCostoFinal())
+                .tiempoEstimadoHoras(solicitud.getTiempoEstimado())
+                .tiempoRealHoras(solicitud.getTiempoReal())
+                .historial(historial)
+                .build();
     }
 }

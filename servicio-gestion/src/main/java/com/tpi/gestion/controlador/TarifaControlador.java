@@ -46,4 +46,12 @@ public class TarifaControlador {
         servicio.eliminar(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/aplicable")
+    public ResponseEntity<Tarifa> buscarTarifaAplicable(@RequestParam Double peso,
+                                                        @RequestParam Double volumen) {
+        return servicio.buscarTarifaAplicable(peso, volumen)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 }
