@@ -1,7 +1,7 @@
-package com.tpi.servicio_logistica.controlador;
+package com.tpi.logistica.controlador;
 
-import com.tpi.servicio_logistica.modelo.Solicitud;
-import com.tpi.servicio_logistica.servicio.SolicitudServicio;
+import com.tpi.logistica.modelo.Solicitud;
+import com.tpi.logistica.servicio.SolicitudServicio;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -68,4 +68,3 @@ public class SolicitudControlador {
         return ResponseEntity.noContent().build();
     }
 }
-

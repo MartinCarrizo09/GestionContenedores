@@ -1,7 +1,7 @@
-package com.tpi.servicio_logistica.controlador;
+package com.tpi.logistica.controlador;
 
-import com.tpi.servicio_logistica.modelo.Ruta;
-import com.tpi.servicio_logistica.servicio.RutaServicio;
+import com.tpi.logistica.modelo.Ruta;
+import com.tpi.logistica.servicio.RutaServicio;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -56,4 +56,3 @@ public class RutaControlador {
         return ResponseEntity.noContent().build();
     }
 }
-

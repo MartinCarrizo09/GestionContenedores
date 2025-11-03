@@ -1,8 +1,9 @@
-package com.tpi.servicio_flota.modelo;
+package com.tpi.flota.modelo;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
 
 /**
@@ -34,11 +35,11 @@ public class Camion {
     @Column(name = "telefono_transportista")
     private String telefonoTransportista;
 
-    @Positive(message = "La capacidad de peso debe ser mayor a 0")
+    @PositiveOrZero(message = "La capacidad de peso debe ser mayor o igual a 0")
     @Column(name = "capacidad_peso")
     private Double capacidadPeso;
 
-    @Positive(message = "La capacidad de volumen debe ser mayor a 0")
+    @PositiveOrZero(message = "La capacidad de volumen debe ser mayor o igual a 0")
     @Column(name = "capacidad_volumen")
     private Double capacidadVolumen;
 

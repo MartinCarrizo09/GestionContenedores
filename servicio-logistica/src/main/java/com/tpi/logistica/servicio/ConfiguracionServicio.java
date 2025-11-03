@@ -1,7 +1,7 @@
-package com.tpi.servicio_logistica.servicio;
+package com.tpi.logistica.servicio;
 
-import com.tpi.servicio_logistica.modelo.Configuracion;
-import com.tpi.servicio_logistica.repositorio.ConfiguracionRepositorio;
+import com.tpi.logistica.modelo.Configuracion;
+import com.tpi.logistica.repositorio.ConfiguracionRepositorio;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,6 +32,9 @@ public class ConfiguracionServicio {
     }
 
     public Configuracion guardar(Configuracion nuevaConfiguracion) {
+        if (repositorio.existsByClave(nuevaConfiguracion.getClave())) {
+            throw new RuntimeException("Ya existe una configuración con esa clave");
+        }
         return repositorio.save(nuevaConfiguracion);
     }
 
@@ -49,4 +52,3 @@ public class ConfiguracionServicio {
         repositorio.deleteById(id);
     }
 }
-

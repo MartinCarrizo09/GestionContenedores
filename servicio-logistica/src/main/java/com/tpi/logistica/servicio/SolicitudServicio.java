@@ -1,7 +1,7 @@
-package com.tpi.servicio_logistica.servicio;
+package com.tpi.logistica.servicio;
 
-import com.tpi.servicio_logistica.modelo.Solicitud;
-import com.tpi.servicio_logistica.repositorio.SolicitudRepositorio;
+import com.tpi.logistica.modelo.Solicitud;
+import com.tpi.logistica.repositorio.SolicitudRepositorio;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -40,6 +40,9 @@ public class SolicitudServicio {
     }
 
     public Solicitud guardar(Solicitud nuevaSolicitud) {
+        if (repositorio.existsByNumeroSeguimiento(nuevaSolicitud.getNumeroSeguimiento())) {
+            throw new RuntimeException("Ya existe una solicitud con ese número de seguimiento");
+        }
         return repositorio.save(nuevaSolicitud);
     }
 
@@ -69,4 +72,3 @@ public class SolicitudServicio {
         repositorio.deleteById(id);
     }
 }
-

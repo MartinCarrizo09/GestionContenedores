@@ -1,7 +1,7 @@
-package com.tpi.servicio_logistica.servicio;
+package com.tpi.logistica.servicio;
 
-import com.tpi.servicio_logistica.modelo.Tramo;
-import com.tpi.servicio_logistica.repositorio.TramoRepositorio;
+import com.tpi.logistica.modelo.Tramo;
+import com.tpi.logistica.repositorio.TramoRepositorio;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -65,4 +65,3 @@ public class TramoServicio {
         repositorio.deleteById(id);
     }
 }
-

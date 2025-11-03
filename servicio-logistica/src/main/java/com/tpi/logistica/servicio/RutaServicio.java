@@ -1,7 +1,7 @@
-package com.tpi.servicio_logistica.servicio;
+package com.tpi.logistica.servicio;
 
-import com.tpi.servicio_logistica.modelo.Ruta;
-import com.tpi.servicio_logistica.repositorio.RutaRepositorio;
+import com.tpi.logistica.modelo.Ruta;
+import com.tpi.logistica.repositorio.RutaRepositorio;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

@@ -1,7 +1,7 @@
-package com.tpi.servicio_logistica.controlador;
+package com.tpi.logistica.controlador;
 
-import com.tpi.servicio_logistica.modelo.Tramo;
-import com.tpi.servicio_logistica.servicio.TramoServicio;
+import com.tpi.logistica.modelo.Tramo;
+import com.tpi.logistica.servicio.TramoServicio;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -50,8 +50,7 @@ public class TramoControlador {
 
     @PostMapping
     public ResponseEntity<Tramo> crear(@Valid @RequestBody Tramo tramo) {
-        Tramo nuevo = servicio.guardar(tramo);
-        return ResponseEntity.ok(nuevo);
+        return ResponseEntity.ok(servicio.guardar(tramo));
     }
 
     @PutMapping("/{id}")
@@ -66,4 +65,3 @@ public class TramoControlador {
         return ResponseEntity.noContent().build();
     }
 }
-

@@ -1,7 +1,7 @@
-package com.tpi.servicio_logistica.controlador;
+package com.tpi.logistica.controlador;
 
-import com.tpi.servicio_logistica.modelo.Configuracion;
-import com.tpi.servicio_logistica.servicio.ConfiguracionServicio;
+import com.tpi.logistica.modelo.Configuracion;
+import com.tpi.logistica.servicio.ConfiguracionServicio;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -58,4 +58,3 @@ public class ConfiguracionControlador {
         return ResponseEntity.noContent().build();
     }
 }
-
