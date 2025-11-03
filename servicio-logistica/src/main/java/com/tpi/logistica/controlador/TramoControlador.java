@@ -64,4 +64,28 @@ public class TramoControlador {
         servicio.eliminar(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/asignar-camion")
+    public ResponseEntity<Tramo> asignarCamion(@PathVariable Long id,
+                                               @RequestParam String patente,
+                                               @RequestParam Double peso,
+                                               @RequestParam Double volumen) {
+        Tramo tramo = servicio.asignarCamion(id, patente, peso, volumen);
+        return ResponseEntity.ok(tramo);
+    }
+
+    @PatchMapping("/{id}/iniciar")
+    public ResponseEntity<Tramo> iniciarTramo(@PathVariable Long id) {
+        Tramo tramo = servicio.iniciarTramo(id);
+        return ResponseEntity.ok(tramo);
+    }
+
+    @PatchMapping("/{id}/finalizar")
+    public ResponseEntity<Tramo> finalizarTramo(@PathVariable Long id,
+                                               @RequestParam Double kmReales,
+                                               @RequestParam Double costoKmCamion,
+                                               @RequestParam Double consumoCamion) {
+        Tramo tramo = servicio.finalizarTramo(id, kmReales, costoKmCamion, consumoCamion);
+        return ResponseEntity.ok(tramo);
+    }
 }

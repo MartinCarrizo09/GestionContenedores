@@ -23,29 +23,46 @@ public class CamionServicio {
         return repositorio.findAll();
     }
 
-    public Optional<Camion> buscarPorId(Long id) {
-        return repositorio.findById(id);
-    }
-
     public Optional<Camion> buscarPorPatente(String patente) {
-        return repositorio.findByPatente(patente);
+        return repositorio.findById(patente);
     }
 
     public List<Camion> listarDisponibles() {
         return repositorio.findByDisponible(true);
     }
 
+    /**
+     * Valida si un camión puede transportar un contenedor según peso y volumen.
+     */
+    public boolean puedeTransportar(String patente, Double pesoContenedor, Double volumenContenedor) {
+        return buscarPorPatente(patente)
+                .map(camion ->
+                    camion.getCapacidadPeso() >= pesoContenedor &&
+                    camion.getCapacidadVolumen() >= volumenContenedor
+                )
+                .orElse(false);
+    }
+
+    /**
+     * Encuentra camiones aptos para transportar un contenedor.
+     */
+    public List<Camion> encontrarCamionesAptos(Double pesoContenedor, Double volumenContenedor) {
+        return repositorio.findByDisponible(true).stream()
+                .filter(c -> c.getCapacidadPeso() >= pesoContenedor &&
+                            c.getCapacidadVolumen() >= volumenContenedor)
+                .toList();
+    }
+
     public Camion guardar(Camion nuevoCamion) {
-        if (repositorio.existsByPatente(nuevoCamion.getPatente())) {
+        if (repositorio.existsById(nuevoCamion.getPatente())) {
             throw new RuntimeException("Ya existe un camión con esa patente");
         }
         return repositorio.save(nuevoCamion);
     }
 
-    public Camion actualizar(Long id, Camion datosActualizados) {
-        return repositorio.findById(id)
+    public Camion actualizar(String patente, Camion datosActualizados) {
+        return repositorio.findById(patente)
                 .map(camion -> {
-                    camion.setPatente(datosActualizados.getPatente());
                     camion.setNombreTransportista(datosActualizados.getNombreTransportista());
                     camion.setTelefonoTransportista(datosActualizados.getTelefonoTransportista());
                     camion.setCapacidadPeso(datosActualizados.getCapacidadPeso());
@@ -58,8 +75,8 @@ public class CamionServicio {
                 .orElseThrow(() -> new RuntimeException("Camión no encontrado"));
     }
 
-    public Camion cambiarDisponibilidad(Long id, Boolean disponible) {
-        return repositorio.findById(id)
+    public Camion cambiarDisponibilidad(String patente, Boolean disponible) {
+        return repositorio.findById(patente)
                 .map(camion -> {
                     camion.setDisponible(disponible);
                     return repositorio.save(camion);
@@ -67,8 +84,8 @@ public class CamionServicio {
                 .orElseThrow(() -> new RuntimeException("Camión no encontrado"));
     }
 
-    public void eliminar(Long id) {
-        repositorio.deleteById(id);
+    public void eliminar(String patente) {
+        repositorio.deleteById(patente);
     }
 }
 

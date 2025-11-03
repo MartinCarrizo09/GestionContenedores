@@ -31,18 +31,16 @@ public class CamionControlador {
         return servicio.listarDisponibles();
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Camion> buscarPorId(@PathVariable Long id) {
-        return servicio.buscarPorId(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @GetMapping("/patente/{patente}")
+    @GetMapping("/{patente}")
     public ResponseEntity<Camion> buscarPorPatente(@PathVariable String patente) {
         return servicio.buscarPorPatente(patente)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/aptos")
+    public List<Camion> buscarCamionesAptos(@RequestParam Double peso, @RequestParam Double volumen) {
+        return servicio.encontrarCamionesAptos(peso, volumen);
     }
 
     @PostMapping
@@ -50,21 +48,21 @@ public class CamionControlador {
         return ResponseEntity.ok(servicio.guardar(camion));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Camion> actualizar(@PathVariable Long id,
+    @PutMapping("/{patente}")
+    public ResponseEntity<Camion> actualizar(@PathVariable String patente,
                                              @Valid @RequestBody Camion datos) {
-        return ResponseEntity.ok(servicio.actualizar(id, datos));
+        return ResponseEntity.ok(servicio.actualizar(patente, datos));
     }
 
-    @PatchMapping("/{id}/disponibilidad")
-    public ResponseEntity<Camion> cambiarDisponibilidad(@PathVariable Long id,
+    @PatchMapping("/{patente}/disponibilidad")
+    public ResponseEntity<Camion> cambiarDisponibilidad(@PathVariable String patente,
                                                         @RequestParam Boolean disponible) {
-        return ResponseEntity.ok(servicio.cambiarDisponibilidad(id, disponible));
+        return ResponseEntity.ok(servicio.cambiarDisponibilidad(patente, disponible));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        servicio.eliminar(id);
+    @DeleteMapping("/{patente}")
+    public ResponseEntity<Void> eliminar(@PathVariable String patente) {
+        servicio.eliminar(patente);
         return ResponseEntity.noContent().build();
     }
 }

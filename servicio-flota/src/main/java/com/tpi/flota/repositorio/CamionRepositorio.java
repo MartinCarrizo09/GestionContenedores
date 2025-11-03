@@ -5,18 +5,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Repositorio para gestionar las operaciones de persistencia de Camion.
+ * La PK es la patente del camión.
  */
 @Repository
-public interface CamionRepositorio extends JpaRepository<Camion, Long> {
-
-    Optional<Camion> findByPatente(String patente);
+public interface CamionRepositorio extends JpaRepository<Camion, String> {
 
     List<Camion> findByDisponible(Boolean disponible);
-
-    boolean existsByPatente(String patente);
 }
 

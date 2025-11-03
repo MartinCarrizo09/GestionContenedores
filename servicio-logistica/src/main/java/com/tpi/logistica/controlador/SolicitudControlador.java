@@ -2,6 +2,8 @@ package com.tpi.logistica.controlador;
 
 import com.tpi.logistica.modelo.Solicitud;
 import com.tpi.logistica.servicio.SolicitudServicio;
+import com.tpi.logistica.dto.EstimacionRutaRequest;
+import com.tpi.logistica.dto.EstimacionRutaResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -66,5 +68,18 @@ public class SolicitudControlador {
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         servicio.eliminar(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/estimar-ruta")
+    public ResponseEntity<EstimacionRutaResponse> estimarRuta(@Valid @RequestBody EstimacionRutaRequest request) {
+        EstimacionRutaResponse estimacion = servicio.estimarRuta(request);
+        return ResponseEntity.ok(estimacion);
+    }
+
+    @PostMapping("/{id}/asignar-ruta")
+    public ResponseEntity<Solicitud> asignarRuta(@PathVariable Long id,
+                                                 @Valid @RequestBody EstimacionRutaRequest datosRuta) {
+        Solicitud solicitud = servicio.asignarRuta(id, datosRuta);
+        return ResponseEntity.ok(solicitud);
     }
 }

@@ -21,11 +21,8 @@ import lombok.*;
 public class Camion {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @NotBlank(message = "La patente es obligatoria")
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String patente;
 
     @NotBlank(message = "El nombre del transportista es obligatorio")
