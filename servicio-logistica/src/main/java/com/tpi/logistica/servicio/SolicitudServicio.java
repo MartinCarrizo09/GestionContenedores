@@ -9,6 +9,7 @@ import com.tpi.logistica.repositorio.TramoRepositorio;
 import com.tpi.logistica.dto.EstimacionRutaRequest;
 import com.tpi.logistica.dto.EstimacionRutaResponse;
 import com.tpi.logistica.dto.SeguimientoSolicitudResponse;
+import com.tpi.logistica.dto.googlemaps.DistanciaYDuracion;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,15 +28,18 @@ public class SolicitudServicio {
     private final RutaRepositorio rutaRepositorio;
     private final TramoRepositorio tramoRepositorio;
     private final CalculoTarifaServicio calculoTarifaServicio;
+    private final GoogleMapsService googleMapsService;
 
     public SolicitudServicio(SolicitudRepositorio repositorio,
                             RutaRepositorio rutaRepositorio,
                             TramoRepositorio tramoRepositorio,
-                            CalculoTarifaServicio calculoTarifaServicio) {
+                            CalculoTarifaServicio calculoTarifaServicio,
+                            GoogleMapsService googleMapsService) {
         this.repositorio = repositorio;
         this.rutaRepositorio = rutaRepositorio;
         this.tramoRepositorio = tramoRepositorio;
         this.calculoTarifaServicio = calculoTarifaServicio;
+        this.googleMapsService = googleMapsService;
     }
 
     public List<Solicitud> listar() {
@@ -93,21 +97,36 @@ public class SolicitudServicio {
 
     /**
      * Estima una ruta para una solicitud.
-     * Calcula tramos, costos y tiempos estimados.
+     * Calcula tramos, costos y tiempos estimados usando Google Maps API.
      */
     public EstimacionRutaResponse estimarRuta(EstimacionRutaRequest request) {
-        // Simula un tramo directo (sin depósitos intermedios por ahora)
-        // En una implementación real, aquí se consultaría Google Maps API
+        // Calcular distancia real usando Google Maps API
+        DistanciaYDuracion distancia;
 
-        Double distanciaKm = 150.0; // Simulated - debería venir de Google Maps
+        if (request.getOrigenLatitud() != null && request.getOrigenLongitud() != null &&
+            request.getDestinoLatitud() != null && request.getDestinoLongitud() != null) {
+            // Usar coordenadas si están disponibles
+            distancia = googleMapsService.calcularDistanciaPorCoordenadas(
+                request.getOrigenLatitud(), request.getOrigenLongitud(),
+                request.getDestinoLatitud(), request.getDestinoLongitud()
+            );
+        } else {
+            // Usar direcciones textuales
+            distancia = googleMapsService.calcularDistanciaYDuracion(
+                request.getOrigenDireccion(),
+                request.getDestinoDireccion()
+            );
+        }
+
+        Double distanciaKm = distancia.getDistanciaKm();
+        Double tiempoEstimado = distancia.getDuracionHoras();
         Double consumoPromedio = 0.15; // 15L/100km promedio
 
         Double costoEstimado = calculoTarifaServicio.calcularCostoEstimadoTramo(distanciaKm, consumoPromedio);
-        Double tiempoEstimado = calculoTarifaServicio.calcularTiempoEstimado(distanciaKm);
 
         EstimacionRutaResponse.TramoEstimado tramo = EstimacionRutaResponse.TramoEstimado.builder()
-                .origenDescripcion(request.getOrigenDireccion())
-                .destinoDescripcion(request.getDestinoDireccion())
+                .origenDescripcion(distancia.getOrigenDireccion())
+                .destinoDescripcion(distancia.getDestinoDireccion())
                 .distanciaKm(distanciaKm)
                 .costoEstimado(costoEstimado)
                 .tiempoEstimadoHoras(tiempoEstimado)
@@ -122,7 +141,7 @@ public class SolicitudServicio {
 
     /**
      * Asigna una ruta a una solicitud existente y la pasa a estado "PROGRAMADA".
-     * Crea la ruta y sus tramos asociados.
+     * Crea la ruta y sus tramos asociados usando datos reales de Google Maps.
      */
     @Transactional
     public Solicitud asignarRuta(Long idSolicitud, EstimacionRutaRequest datosRuta) {
@@ -133,33 +152,49 @@ public class SolicitudServicio {
             throw new RuntimeException("Solo se pueden asignar rutas a solicitudes en estado BORRADOR");
         }
 
+        // Calcular distancia real usando Google Maps
+        DistanciaYDuracion distancia;
+
+        if (solicitud.getOrigenLatitud() != null && solicitud.getOrigenLongitud() != null &&
+            solicitud.getDestinoLatitud() != null && solicitud.getDestinoLongitud() != null) {
+            distancia = googleMapsService.calcularDistanciaPorCoordenadas(
+                solicitud.getOrigenLatitud(), solicitud.getOrigenLongitud(),
+                solicitud.getDestinoLatitud(), solicitud.getDestinoLongitud()
+            );
+        } else {
+            distancia = googleMapsService.calcularDistanciaYDuracion(
+                solicitud.getOrigenDireccion(),
+                solicitud.getDestinoDireccion()
+            );
+        }
+
         // Crear la ruta
         Ruta ruta = Ruta.builder()
                 .idSolicitud(idSolicitud)
                 .build();
         ruta = rutaRepositorio.save(ruta);
 
-        // Crear tramo(s) - por ahora solo un tramo directo
-        Double distanciaKm = 150.0; // Simulated
+        // Crear tramo(s) con datos reales de Google Maps
+        Double distanciaKm = distancia.getDistanciaKm();
+        Double tiempoEstimadoHoras = distancia.getDuracionHoras();
         Double consumoPromedio = 0.15;
         Double costoEstimado = calculoTarifaServicio.calcularCostoEstimadoTramo(distanciaKm, consumoPromedio);
-        Double tiempoEstimado = calculoTarifaServicio.calcularTiempoEstimado(distanciaKm);
 
         Tramo tramo = Tramo.builder()
                 .idRuta(ruta.getId())
-                .origenDescripcion(solicitud.getOrigenDireccion())
-                .destinoDescripcion(solicitud.getDestinoDireccion())
+                .origenDescripcion(distancia.getOrigenDireccion())
+                .destinoDescripcion(distancia.getDestinoDireccion())
                 .distanciaKm(distanciaKm)
                 .estado("ESTIMADO")
                 .fechaInicioEstimada(LocalDateTime.now().plusDays(1))
-                .fechaFinEstimada(LocalDateTime.now().plusDays(1).plusHours(tiempoEstimado.longValue()))
+                .fechaFinEstimada(LocalDateTime.now().plusDays(1).plusHours(tiempoEstimadoHoras.longValue()))
                 .build();
         tramoRepositorio.save(tramo);
 
-        // Actualizar solicitud
+        // Actualizar solicitud con datos reales
         solicitud.setEstado("PROGRAMADA");
         solicitud.setCostoEstimado(costoEstimado);
-        solicitud.setTiempoEstimado(tiempoEstimado);
+        solicitud.setTiempoEstimado(tiempoEstimadoHoras);
 
         return repositorio.save(solicitud);
     }
