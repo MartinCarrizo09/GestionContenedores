@@ -29,8 +29,6 @@ public class Deposito {
     @NotBlank(message = "La dirección del depósito es obligatoria")
     private String direccion;
 
-    private String ciudad;
-
     @DecimalMin(value = "-90.0", message = "La latitud debe estar entre -90 y 90")
     private Double latitud;
 
@@ -38,5 +36,6 @@ public class Deposito {
     private Double longitud;
 
     @DecimalMin(value = "0.0", message = "El costo de estadía debe ser mayor o igual a 0")
-    private Double costo_estadia_xdia;
+    @Column(name = "costo_estadia_xdia")
+    private Double costoEstadiaXdia;
 }

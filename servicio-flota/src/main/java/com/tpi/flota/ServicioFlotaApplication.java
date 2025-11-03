@@ -1,13 +1,13 @@
-package com.tpi.servicio_logistica;
+package com.tpi.flota;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ServicioLogisticaApplication {
+public class ServicioFlotaApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ServicioLogisticaApplication.class, args);
+		SpringApplication.run(ServicioFlotaApplication.class, args);
 	}
 
 }

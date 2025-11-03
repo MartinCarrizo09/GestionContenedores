@@ -1,4 +1,4 @@
-package com.tpi.servicio_logistica;
+package com.tpi.logistica;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

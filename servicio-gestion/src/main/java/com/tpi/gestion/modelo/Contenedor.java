@@ -2,6 +2,7 @@ package com.tpi.gestion.modelo;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -22,18 +23,20 @@ public class Contenedor {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "El código de identificación es obligatorio")
+    @Column(name = "codigo_identificacion", unique = true, nullable = false)
+    private String codigoIdentificacion;
+
     @DecimalMin(value = "0.1", message = "El peso del contenedor debe ser mayor a 0")
-    private Double pesoKg;
+    @Column(name = "peso")
+    private Double peso;
 
     @DecimalMin(value = "0.1", message = "El volumen del contenedor debe ser mayor a 0")
-    private Double volumenM3;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private EstadoContenedor estado;
+    @Column(name = "volumen")
+    private Double volumen;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cliente_id", nullable = false)
+    @JoinColumn(name = "id_cliente", nullable = false)
     @NotNull(message = "El contenedor debe pertenecer a un cliente")
     private Cliente cliente;
 }

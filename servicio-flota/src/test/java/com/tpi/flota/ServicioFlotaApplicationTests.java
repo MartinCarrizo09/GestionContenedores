@@ -1,4 +1,4 @@
-package com.tpi.servicio_flota;
+package com.tpi.flota;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

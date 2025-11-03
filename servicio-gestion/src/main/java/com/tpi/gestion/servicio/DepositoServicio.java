@@ -42,10 +42,9 @@ public class DepositoServicio {
                 .map(deposito -> {
                     deposito.setNombre(datosActualizados.getNombre());
                     deposito.setDireccion(datosActualizados.getDireccion());
-                    deposito.setCiudad(datosActualizados.getCiudad());
                     deposito.setLatitud(datosActualizados.getLatitud());
                     deposito.setLongitud(datosActualizados.getLongitud());
-                    deposito.setCosto_estadia_xdia(datosActualizados.getCosto_estadia_xdia());
+                    deposito.setCostoEstadiaXdia(datosActualizados.getCostoEstadiaXdia());
                     return repositorio.save(deposito);
                 })
                 .orElseThrow(() -> new RuntimeException("Depósito no encontrado"));
