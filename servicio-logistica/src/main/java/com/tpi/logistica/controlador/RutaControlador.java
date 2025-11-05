@@ -12,7 +12,7 @@ import java.util.List;
  * Controlador REST para gestionar rutas.
  */
 @RestController
-@RequestMapping("/api/rutas")
+@RequestMapping("/rutas")
 public class RutaControlador {
 
     private final RutaServicio servicio;

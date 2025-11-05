@@ -1,12 +1,12 @@
 # ============================================================
-# Servicio de Gestión - Configuración Supabase
-# Schema: gestion
-# Tablas: clientes, contenedores, depositos, tarifas
+# Servicio de Logística - Configuración Supabase
+# Schema: logistica
+# Tablas: solicitudes, rutas, tramos
 # ============================================================
 
 spring:
   application:
-    name: servicio-gestion
+    name: servicio-logistica
 
   # ========== Configuración de Base de Datos Supabase ==========
   datasource:
@@ -22,7 +22,7 @@ spring:
       connection-timeout: 30000
       idle-timeout: 600000
       max-lifetime: 1800000
-      pool-name: GestionHikariPool
+      pool-name: LogisticaHikariPool
 
   # ========== Configuración JPA / Hibernate ==========
   jpa:
@@ -36,20 +36,26 @@ spring:
         format_sql: true
         use_sql_comments: true
         # Schema por defecto para este microservicio
-        default_schema: gestion
+        default_schema: logistica
         jdbc:
           lob:
             non_contextual_creation: true
 
 # ========== Configuración del Servidor ==========
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${SERVER_PORT:8082}
   servlet:
-    context-path: /api-gestion
+    context-path: /api-logistica
+
+# ========== Google Maps API Configuration ==========
+google:
+  maps:
+    api:
+      key: ${GOOGLE_MAPS_API_KEY:AIzaSyAUp0j1WFgacoQYTKhtPI-CF6Ld7a7jHSg}
 
 # ========== Logging ==========
 logging:
   level:
-    com.tpi.gestion: ${LOG_LEVEL:INFO}
+    com.tpi.logistica: ${LOG_LEVEL:INFO}
     org.hibernate.SQL: ${SQL_LOG_LEVEL:DEBUG}
     org.hibernate.type.descriptor.sql.BasicBinder: ${SQL_PARAMS_LOG_LEVEL:TRACE}

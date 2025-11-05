@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
  * fecha_inicio_real, fecha_fin_real
  */
 @Entity
-@Table(name = "tramos")
+@Table(name = "tramos", schema = "logistica")
 @Getter
 @Setter
 @NoArgsConstructor

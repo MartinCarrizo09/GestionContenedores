@@ -9,7 +9,7 @@ import lombok.*;
  * Se usa para definir costos según peso y volumen.
  */
 @Entity
-@Table(name = "tarifas")
+@Table(name = "tarifas", schema = "gestion")
 @Getter
 @Setter
 @NoArgsConstructor

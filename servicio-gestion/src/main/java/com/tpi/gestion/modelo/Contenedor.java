@@ -1,5 +1,6 @@
 package com.tpi.gestion.modelo;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
@@ -11,12 +12,13 @@ import lombok.*;
  * Está asociado a un cliente y se usa en los traslados logísticos.
  */
 @Entity
-@Table(name = "contenedores")
+@Table(name = "contenedores", schema = "gestion")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Contenedor {
 
     @Id

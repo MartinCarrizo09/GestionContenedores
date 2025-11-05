@@ -13,6 +13,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@SuppressWarnings("deprecation")
 public class GoogleMapsDistanceResponse {
 
     private List<Row> rows;

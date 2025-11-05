@@ -11,7 +11,7 @@ import lombok.*;
  * Los clientes pueden generar solicitudes y tener contenedores asociados.
  */
 @Entity
-@Table(name = "clientes")
+@Table(name = "clientes", schema = "gestion")
 @Getter
 @Setter
 @NoArgsConstructor

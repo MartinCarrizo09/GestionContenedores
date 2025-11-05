@@ -13,7 +13,7 @@ import java.util.List;
  * Expone los endpoints HTTP para crear, consultar, actualizar y eliminar.
  */
 @RestController
-@RequestMapping("/api/depositos")
+@RequestMapping("/depositos")
 public class DepositoControlador {
 
     private final DepositoServicio servicio;

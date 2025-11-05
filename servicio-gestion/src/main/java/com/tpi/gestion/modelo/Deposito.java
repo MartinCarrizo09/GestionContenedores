@@ -11,7 +11,7 @@ import lombok.*;
  */
 
 @Entity
-@Table(name = "depositos")
+@Table(name = "depositos", schema = "gestion")
 @Getter
 @Setter
 @NoArgsConstructor

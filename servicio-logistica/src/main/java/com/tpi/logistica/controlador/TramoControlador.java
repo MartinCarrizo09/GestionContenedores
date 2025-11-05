@@ -12,7 +12,7 @@ import java.util.List;
  * Controlador REST para gestionar tramos.
  */
 @RestController
-@RequestMapping("/api/tramos")
+@RequestMapping("/tramos")
 public class TramoControlador {
 
     private final TramoServicio servicio;

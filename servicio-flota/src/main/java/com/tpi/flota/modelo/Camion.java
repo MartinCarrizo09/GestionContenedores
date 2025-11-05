@@ -12,7 +12,7 @@ import lombok.*;
  * capacidad_peso, capacidad_volumen, consumo_combustible_km, costo_km, disponible
  */
 @Entity
-@Table(name = "camiones")
+@Table(name = "camiones", schema = "flota")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -48,6 +48,7 @@ public class Camion {
     @Column(name = "costo_km")
     private Double costoKm;
 
+    @Builder.Default
     @Column(nullable = false)
     private Boolean disponible = true;
 }

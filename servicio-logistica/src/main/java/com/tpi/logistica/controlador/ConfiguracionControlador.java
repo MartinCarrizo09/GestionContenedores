@@ -12,7 +12,7 @@ import java.util.List;
  * Controlador REST para gestionar configuraciones.
  */
 @RestController
-@RequestMapping("/api/configuraciones")
+@RequestMapping("/configuraciones")
 public class ConfiguracionControlador {
 
     private final ConfiguracionServicio servicio;

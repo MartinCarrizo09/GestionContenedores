@@ -21,6 +21,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  * Implementado con RestClient (cliente HTTP sincrónico moderno de Spring 6+).
  */
 @Service
+@SuppressWarnings("deprecation")
 public class GoogleMapsService {
 
     private static final Logger logger = LoggerFactory.getLogger(GoogleMapsService.class);
@@ -95,13 +96,13 @@ public class GoogleMapsService {
                     (response != null ? response.getStatus() : "respuesta nula"));
             }
 
-            if (response.getRows().isEmpty() || response.getRows().getFirst().getElements().isEmpty()) {
+            if (response.getRows().isEmpty() || response.getRows().get(0).getElements().isEmpty()) {
                 logger.warn("No se encontraron rutas entre: {} y {}", origen, destino);
                 throw new RuntimeException("No se encontraron rutas entre origen y destino");
             }
 
-            // Extrae el primer (y único) elemento de la respuesta usando getFirst() (Java 21+)
-            GoogleMapsDistanceResponse.Element element = response.getRows().getFirst().getElements().getFirst();
+            // Extrae el primer (y único) elemento de la respuesta
+            GoogleMapsDistanceResponse.Element element = response.getRows().get(0).getElements().get(0);
 
             // Valida que el elemento no contenga error
             if (!"OK".equals(element.getStatus())) {
@@ -122,8 +123,8 @@ public class GoogleMapsService {
                     .distanciaTexto(element.getDistance().getText())
                     .duracionHoras(duracionHoras)
                     .duracionTexto(element.getDuration().getText())
-                    .origenDireccion(response.getOriginAddresses().getFirst())
-                    .destinoDireccion(response.getDestinationAddresses().getFirst())
+                    .origenDireccion(response.getOriginAddresses().get(0))
+                    .destinoDireccion(response.getDestinationAddresses().get(0))
                     .build();
 
         } catch (RuntimeException e) {

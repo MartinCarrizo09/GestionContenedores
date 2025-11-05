@@ -15,7 +15,7 @@ import java.util.List;
  * Controlador REST para gestionar solicitudes.
  */
 @RestController
-@RequestMapping("/api/solicitudes")
+@RequestMapping("/solicitudes")
 public class SolicitudControlador {
 
     private final SolicitudServicio servicio;

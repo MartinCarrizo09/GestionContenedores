@@ -9,7 +9,7 @@ import lombok.*;
  * Campos: id, clave, valor
  */
 @Entity
-@Table(name = "configuracion")
+@Table(name = "configuracion", schema = "logistica")
 @Getter
 @Setter
 @NoArgsConstructor

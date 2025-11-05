@@ -9,7 +9,7 @@ import lombok.*;
  * Campos: id, id_solicitud
  */
 @Entity
-@Table(name = "rutas")
+@Table(name = "rutas", schema = "logistica")
 @Getter
 @Setter
 @NoArgsConstructor

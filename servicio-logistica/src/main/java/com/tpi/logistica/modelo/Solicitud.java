@@ -13,7 +13,7 @@ import lombok.*;
  * estado, costo_estimado, tiempo_estimado, costo_final, tiempo_real
  */
 @Entity
-@Table(name = "solicitudes")
+@Table(name = "solicitudes", schema = "logistica")
 @Getter
 @Setter
 @NoArgsConstructor

@@ -12,7 +12,7 @@ import java.util.List;
  * Controlador REST para gestionar los camiones de la flota.
  */
 @RestController
-@RequestMapping("/api/camiones")
+@RequestMapping("/camiones")
 public class CamionControlador {
 
     private final CamionServicio servicio;
