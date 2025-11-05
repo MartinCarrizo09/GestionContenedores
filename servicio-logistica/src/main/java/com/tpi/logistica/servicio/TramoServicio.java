@@ -1,12 +1,10 @@
 package com.tpi.logistica.servicio;
 
 import com.tpi.logistica.modelo.Tramo;
-import com.tpi.logistica.modelo.Solicitud;
 import com.tpi.logistica.repositorio.TramoRepositorio;
 import com.tpi.logistica.repositorio.SolicitudRepositorio;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.time.Duration;
@@ -22,15 +20,14 @@ public class TramoServicio {
     private final TramoRepositorio repositorio;
     private final SolicitudRepositorio solicitudRepositorio;
     private final CalculoTarifaServicio calculoTarifaServicio;
-    private final RestTemplate restTemplate;
 
+    // Constructor con inyección de dependencias
     public TramoServicio(TramoRepositorio repositorio,
                         SolicitudRepositorio solicitudRepositorio,
                         CalculoTarifaServicio calculoTarifaServicio) {
         this.repositorio = repositorio;
         this.solicitudRepositorio = solicitudRepositorio;
         this.calculoTarifaServicio = calculoTarifaServicio;
-        this.restTemplate = new RestTemplate();
     }
 
     public List<Tramo> listar() {
@@ -164,24 +161,19 @@ public class TramoServicio {
     }
 
     private void actualizarSolicitudFinal(Long idRuta, List<Tramo> tramos) {
-        // Buscar la ruta
-        com.tpi.logistica.repositorio.RutaRepositorio rutaRepo =
-            new org.springframework.beans.factory.annotation.Autowired() {}.getClass().getAnnotation(null);
-        // Simplificado: buscar solicitud por idRuta
-        // En producción se debería inyectar RutaRepositorio
 
         // Calcular tiempo real total en horas
-        Duration tiempoTotal = Duration.ZERO;
-        Double costoTotal = 0.0;
+        final Duration[] tiempoTotal = {Duration.ZERO};
+        final Double[] costoTotal = {0.0};
 
         for (Tramo t : tramos) {
             if (t.getFechaInicioReal() != null && t.getFechaFinReal() != null) {
-                tiempoTotal = tiempoTotal.plus(
+                tiempoTotal[0] = tiempoTotal[0].plus(
                     Duration.between(t.getFechaInicioReal(), t.getFechaFinReal())
                 );
             }
             if (t.getCostoReal() != null) {
-                costoTotal += t.getCostoReal();
+                costoTotal[0] += t.getCostoReal();
             }
         }
 
@@ -191,8 +183,8 @@ public class TramoServicio {
                 .filter(s -> s.getEstado().equals("PROGRAMADA") || s.getEstado().equals("EN_TRANSITO"))
                 .findFirst()
                 .ifPresent(solicitud -> {
-                    solicitud.setTiempoReal(tiempoTotal.toHours() + (tiempoTotal.toMinutesPart() / 60.0));
-                    solicitud.setCostoFinal(costoTotal);
+                    solicitud.setTiempoReal(tiempoTotal[0].toHours() + (tiempoTotal[0].toMinutesPart() / 60.0));
+                    solicitud.setCostoFinal(costoTotal[0]);
                     solicitud.setEstado("ENTREGADA");
                     solicitudRepositorio.save(solicitud);
                 });
