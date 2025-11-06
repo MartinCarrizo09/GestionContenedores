@@ -76,5 +76,5 @@ keycloak-data/
 *.mv.db
 *.trace.db
 
-# ========== Supabase local ==========
-.supabase/
+# ========== Docker Volumes ==========
+tpi-postgres-data/

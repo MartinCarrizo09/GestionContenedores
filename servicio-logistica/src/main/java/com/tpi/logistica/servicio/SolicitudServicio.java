@@ -13,6 +13,8 @@ import com.tpi.logistica.dto.ContenedorPendienteResponse;
 import com.tpi.logistica.dto.googlemaps.DistanciaYDuracion;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,17 +32,20 @@ public class SolicitudServicio {
     private final TramoRepositorio tramoRepositorio;
     private final CalculoTarifaServicio calculoTarifaServicio;
     private final GoogleMapsService googleMapsService;
+    private final RestTemplate restTemplate;
 
     public SolicitudServicio(SolicitudRepositorio repositorio,
                             RutaRepositorio rutaRepositorio,
                             TramoRepositorio tramoRepositorio,
                             CalculoTarifaServicio calculoTarifaServicio,
-                            GoogleMapsService googleMapsService) {
+                            GoogleMapsService googleMapsService,
+                            RestTemplate restTemplate) {
         this.repositorio = repositorio;
         this.rutaRepositorio = rutaRepositorio;
         this.tramoRepositorio = tramoRepositorio;
         this.calculoTarifaServicio = calculoTarifaServicio;
         this.googleMapsService = googleMapsService;
+        this.restTemplate = restTemplate;
     }
 
     public List<Solicitud> listar() {
@@ -67,7 +72,121 @@ public class SolicitudServicio {
         if (repositorio.existsByNumeroSeguimiento(nuevaSolicitud.getNumeroSeguimiento())) {
             throw new RuntimeException("Ya existe una solicitud con ese número de seguimiento");
         }
+        
+        // ✅ IMPLEMENTADO: Validar que el cliente exista, si no, crearlo automáticamente
+        Long idCliente = nuevaSolicitud.getIdCliente();
+        validarOCrearCliente(idCliente);
+        
+        // ✅ IMPLEMENTADO: Validar que el contenedor exista
+        Long idContenedor = nuevaSolicitud.getIdContenedor();
+        validarContenedor(idContenedor);
+        
+        // Estado inicial debe ser BORRADOR
+        if (nuevaSolicitud.getEstado() == null || nuevaSolicitud.getEstado().isEmpty()) {
+            nuevaSolicitud.setEstado("BORRADOR");
+        }
+        
         return repositorio.save(nuevaSolicitud);
+    }
+    
+    /**
+     * Valida que el cliente exista en servicio-gestion.
+     * Si no existe, crea un cliente genérico automáticamente (Requisito 1 del TPI).
+     */
+    private void validarOCrearCliente(Long idCliente) {
+        String urlGestion = "http://localhost:8080/clientes/" + idCliente;
+        
+        try {
+            // Intentar obtener el cliente
+            restTemplate.getForObject(urlGestion, ClienteDTO.class);
+            // Si no lanza excepción, el cliente existe
+            
+        } catch (HttpClientErrorException.NotFound e) {
+            // Cliente no existe - crear automáticamente
+            System.out.println("⚠️ Cliente ID " + idCliente + " no encontrado. Creando automáticamente...");
+            
+            ClienteDTO nuevoCliente = new ClienteDTO();
+            nuevoCliente.setNombre("Cliente");
+            nuevoCliente.setApellido("AutoGenerado-" + idCliente);
+            nuevoCliente.setEmail("cliente" + idCliente + "@autogenerado.com");
+            nuevoCliente.setTelefono("+54-11-0000-0000");
+            nuevoCliente.setCuil("20-" + String.format("%08d", idCliente) + "-0");
+            
+            try {
+                restTemplate.postForObject("http://localhost:8080/clientes", nuevoCliente, ClienteDTO.class);
+                System.out.println("✅ Cliente ID " + idCliente + " creado automáticamente");
+            } catch (Exception ex) {
+                throw new RuntimeException("Error al crear cliente automáticamente: " + ex.getMessage());
+            }
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Error al validar cliente con servicio-gestion: " + e.getMessage() + 
+                ". Verifique que el servicio-gestion esté disponible en http://localhost:8080");
+        }
+    }
+    
+    /**
+     * Valida que el contenedor exista en servicio-gestion.
+     */
+    private void validarContenedor(Long idContenedor) {
+        String urlGestion = "http://localhost:8080/contenedores/" + idContenedor;
+        
+        try {
+            restTemplate.getForObject(urlGestion, ContenedorDTO.class);
+            // Si no lanza excepción, el contenedor existe
+            
+        } catch (HttpClientErrorException.NotFound e) {
+            throw new RuntimeException("El contenedor con ID " + idContenedor + " no existe. " +
+                "Debe crear el contenedor antes de registrar la solicitud.");
+                
+        } catch (Exception e) {
+            throw new RuntimeException("Error al validar contenedor con servicio-gestion: " + e.getMessage() + 
+                ". Verifique que el servicio-gestion esté disponible en http://localhost:8080");
+        }
+    }
+    
+    /**
+     * DTO interno para cliente (servicio-gestion).
+     */
+    private static class ClienteDTO {
+        private Long id;
+        private String nombre;
+        private String apellido;
+        private String email;
+        private String telefono;
+        private String cuil;
+        
+        public Long getId() { return id; }
+        public void setId(Long id) { this.id = id; }
+        public String getNombre() { return nombre; }
+        public void setNombre(String nombre) { this.nombre = nombre; }
+        public String getApellido() { return apellido; }
+        public void setApellido(String apellido) { this.apellido = apellido; }
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+        public String getTelefono() { return telefono; }
+        public void setTelefono(String telefono) { this.telefono = telefono; }
+        public String getCuil() { return cuil; }
+        public void setCuil(String cuil) { this.cuil = cuil; }
+    }
+    
+    /**
+     * DTO interno para contenedor (servicio-gestion).
+     */
+    private static class ContenedorDTO {
+        private Long id;
+        private String codigoIdentificacion;
+        private Double peso;
+        private Double volumen;
+        
+        public Long getId() { return id; }
+        public void setId(Long id) { this.id = id; }
+        public String getCodigoIdentificacion() { return codigoIdentificacion; }
+        public void setCodigoIdentificacion(String codigoIdentificacion) { this.codigoIdentificacion = codigoIdentificacion; }
+        public Double getPeso() { return peso; }
+        public void setPeso(Double peso) { this.peso = peso; }
+        public Double getVolumen() { return volumen; }
+        public void setVolumen(Double volumen) { this.volumen = volumen; }
     }
 
     public Solicitud actualizar(Long id, Solicitud datosActualizados) {

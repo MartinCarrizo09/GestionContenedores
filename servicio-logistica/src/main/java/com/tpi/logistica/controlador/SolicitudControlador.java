@@ -54,6 +54,13 @@ public class SolicitudControlador {
         return servicio.listarPorEstado(estado);
     }
 
+    /**
+     * Registra una nueva solicitud de transporte.
+     * El cliente puede crear una solicitud sin estar registrado previamente.
+     * 
+     * ✅ Requisito 1 del TPI (rol: CLIENTE)
+     * Estado inicial: BORRADOR
+     */
     @PostMapping
     public ResponseEntity<Solicitud> crear(@Valid @RequestBody Solicitud solicitud) {
         Solicitud nueva = servicio.guardar(solicitud);
@@ -72,12 +79,27 @@ public class SolicitudControlador {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Estima una ruta para una solicitud.
+     * Calcula distancias reales usando Google Maps API y costos estimados.
+     * 
+     * ✅ Requisito 3 del TPI (rol: OPERADOR)
+     * Devuelve: tramos, costos estimados, tiempos estimados
+     */
     @PostMapping("/estimar-ruta")
     public ResponseEntity<EstimacionRutaResponse> estimarRuta(@Valid @RequestBody EstimacionRutaRequest request) {
         EstimacionRutaResponse estimacion = servicio.estimarRuta(request);
         return ResponseEntity.ok(estimacion);
     }
 
+    /**
+     * Asigna una ruta estimada a una solicitud.
+     * Crea la ruta, sus tramos en estado ESTIMADO y cambia solicitud a PROGRAMADA.
+     * 
+     * ✅ Requisito 4 del TPI (rol: OPERADOR)
+     * Transición: BORRADOR → PROGRAMADA
+     * Crea: Ruta + Tramos (estado ESTIMADO)
+     */
     @PostMapping("/{id}/asignar-ruta")
     public ResponseEntity<Solicitud> asignarRuta(@PathVariable Long id,
                                                  @Valid @RequestBody EstimacionRutaRequest datosRuta) {
@@ -92,6 +114,14 @@ public class SolicitudControlador {
         return ResponseEntity.ok(seguimiento);
     }
 
+    /**
+     * Lista contenedores pendientes de entrega.
+     * Excluye solicitudes en estado COMPLETADA, CANCELADA o ENTREGADA.
+     * Permite filtrar por estado específico o por ID de contenedor.
+     * 
+     * ✅ Requisito 5 del TPI (rol: OPERADOR)
+     * Devuelve: información de solicitud + ubicación actual + tramo activo
+     */
     @GetMapping("/pendientes")
     public ResponseEntity<List<ContenedorPendienteResponse>> listarPendientes(
             @RequestParam(required = false) String estado,

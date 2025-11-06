@@ -20,7 +20,7 @@ Para cumplir con los requisitos del proyecto, proponemos una arquitectura de mic
 - Servicio de logística (logistics-service): Gestiona solicitudes, rutas y tramos.
 - Servicio de Flota (fleet-service): Gestiona camiones y transportistas.
 - Servicio de Gestión (management-service): Administra entidades maestras como clientes, contenedores, depósitos y tarifas.
-- Base de Datos (Supabase/PostgreSQL): Se utilizará una instancia de base de datos en la nube gestionada por Supabase.
+- Base de Datos (PostgreSQL): Base de datos local con Docker para desarrollo.
 - API Externa (Google Distance Matrix): El servicio de logística se comunicará con esta API para calcular distancias y estimar tiempos de viaje.
 
 
@@ -43,7 +43,7 @@ Este archivo docker-compose.yml nos permitirá levantar todo el entorno de backe
 2. El Usuario envía una petición (ej. para crear un camión) al API Gateway, incluyendo el token.
 3. El API Gateway valida el token con Keycloak.
 4. Si el token es válido, el Gateway redirige la petición al microservicio correspondiente (en este caso, al servicio de flota).
-5. El servicio de flota procesa la petición y se comunica con la Base de Datos en Supabase para guardar/actualizar la información.
+5. El servicio de flota procesa la petición y se comunica con la Base de Datos PostgreSQL para guardar/actualizar la información.
 6. Si un servicio necesita información externa (ej. el servicio de logística necesita calcular una distancia), consultará a la API de Google Maps.
 
 Diagrama de Contenedores

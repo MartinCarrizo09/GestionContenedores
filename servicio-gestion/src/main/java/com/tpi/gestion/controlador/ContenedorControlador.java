@@ -29,6 +29,13 @@ public class ContenedorControlador {
         return servicio.listarPorCliente(idCliente);
     }
 
+    /**
+     * Consulta el estado actual de un contenedor.
+     * Devuelve información del contenedor, cliente, solicitud activa y ubicación actual.
+     * 
+     * ✅ Requisito 2 del TPI (rol: CLIENTE)
+     * Devuelve: datos del contenedor + cliente + solicitud activa + ubicación + tramo actual
+     */
     // Ruta más específica PRIMERO - debe ir antes de /{id}
     @GetMapping("/{id}/estado")
     public ResponseEntity<EstadoContenedorResponse> obtenerEstado(@PathVariable Long id) {

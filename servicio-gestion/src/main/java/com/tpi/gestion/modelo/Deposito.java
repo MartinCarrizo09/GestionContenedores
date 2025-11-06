@@ -7,7 +7,7 @@ import lombok.*;
 
 /**
  * Entidad que representa un depósito físico dentro del sistema.
- * Será persistida en la base de datos (luego PostgreSQL en Supabase).
+ * Será persistida en la base de datos PostgreSQL.
  */
 
 @Entity
