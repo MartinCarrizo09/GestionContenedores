@@ -51,7 +51,14 @@ public class ContenedorServicio {
                     c.setCodigoIdentificacion(datos.getCodigoIdentificacion());
                     c.setPeso(datos.getPeso());
                     c.setVolumen(datos.getVolumen());
-                    c.setCliente(datos.getCliente());
+                    
+                    // Buscar y cargar el cliente completo si viene un ID de cliente
+                    if (datos.getCliente() != null && datos.getCliente().getId() != null) {
+                        Cliente cliente = clienteRepo.findById(datos.getCliente().getId())
+                                .orElseThrow(() -> new RuntimeException("El cliente indicado no existe"));
+                        c.setCliente(cliente);
+                    }
+                    
                     return contenedorRepo.save(c);
                 })
                 .orElseThrow(() -> new RuntimeException("Contenedor no encontrado"));

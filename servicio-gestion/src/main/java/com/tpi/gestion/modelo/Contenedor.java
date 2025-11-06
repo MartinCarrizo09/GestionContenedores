@@ -40,5 +40,6 @@ public class Contenedor {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_cliente", nullable = false)
     @NotNull(message = "El contenedor debe pertenecer a un cliente")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) //linea de codigo que me tiro el cloude para arreglar los endpoints de contenedores
     private Cliente cliente;
 }
