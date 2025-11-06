@@ -9,6 +9,7 @@ import com.tpi.logistica.repositorio.TramoRepositorio;
 import com.tpi.logistica.dto.EstimacionRutaRequest;
 import com.tpi.logistica.dto.EstimacionRutaResponse;
 import com.tpi.logistica.dto.SeguimientoSolicitudResponse;
+import com.tpi.logistica.dto.ContenedorPendienteResponse;
 import com.tpi.logistica.dto.googlemaps.DistanciaYDuracion;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -197,6 +198,114 @@ public class SolicitudServicio {
         solicitud.setTiempoEstimado(tiempoEstimadoHoras);
 
         return repositorio.save(solicitud);
+    }
+
+    /**
+     * Obtiene todas las solicitudes pendientes de entrega (no están en estado ENTREGADA).
+     * Permite filtrar por estado específico o por ID de contenedor.
+     */
+    public List<ContenedorPendienteResponse> listarPendientes(String estadoFiltro, Long idContenedor) {
+        List<Solicitud> solicitudes;
+        
+        if (idContenedor != null) {
+            // Filtrar por contenedor específico - excluir completadas y canceladas
+            solicitudes = repositorio.findByIdContenedor(idContenedor).stream()
+                    .filter(s -> !esEstadoFinal(s.getEstado()))
+                    .toList();
+        } else if (estadoFiltro != null && !estadoFiltro.isEmpty()) {
+            // Filtrar por estado específico
+            solicitudes = repositorio.findByEstado(estadoFiltro);
+        } else {
+            // Obtener todas EXCEPTO las completadas, canceladas y entregadas
+            solicitudes = repositorio.findAll().stream()
+                    .filter(s -> !esEstadoFinal(s.getEstado()))
+                    .toList();
+        }
+        
+        return solicitudes.stream()
+                .map(this::convertirAContenedorPendiente)
+                .toList();
+    }
+    
+    /**
+     * Verifica si un estado es final (no pendiente de entrega).
+     * Estados finales: completada, cancelada, entregada
+     */
+    private boolean esEstadoFinal(String estado) {
+        if (estado == null) return false;
+        String estadoLower = estado.toLowerCase();
+        return estadoLower.equals("completada") || 
+               estadoLower.equals("cancelada") || 
+               estadoLower.equals("entregada");
+    }
+
+    /**
+     * Convierte una Solicitud a ContenedorPendienteResponse con información del tramo actual.
+     */
+    private ContenedorPendienteResponse convertirAContenedorPendiente(Solicitud solicitud) {
+        // Buscar ruta asociada
+        List<Ruta> rutas = rutaRepositorio.findByIdSolicitud(solicitud.getId());
+        
+        ContenedorPendienteResponse.ContenedorPendienteResponseBuilder builder = 
+                ContenedorPendienteResponse.builder()
+                .idSolicitud(solicitud.getId())
+                .numeroSeguimiento(solicitud.getNumeroSeguimiento())
+                .idContenedor(solicitud.getIdContenedor())
+                .idCliente(solicitud.getIdCliente())
+                .estado(solicitud.getEstado())
+                .costoEstimado(solicitud.getCostoEstimado())
+                .costoFinal(solicitud.getCostoFinal());
+        
+        // Determinar ubicación actual basándose en el estado y tramos
+        if (!rutas.isEmpty()) {
+            Ruta ruta = rutas.get(0);
+            List<Tramo> tramos = tramoRepositorio.findByIdRuta(ruta.getId());
+            
+            // Buscar el tramo activo (iniciado pero no finalizado)
+            Optional<Tramo> tramoActivo = tramos.stream()
+                    .filter(t -> "INICIADO".equals(t.getEstado()) || "ASIGNADO".equals(t.getEstado()))
+                    .findFirst();
+            
+            if (tramoActivo.isPresent()) {
+                Tramo tramo = tramoActivo.get();
+                
+                if ("INICIADO".equals(tramo.getEstado())) {
+                    builder.ubicacionActual("EN_TRANSITO")
+                           .descripcionUbicacion("En viaje de " + tramo.getOrigenDescripcion() + 
+                                                " hacia " + tramo.getDestinoDescripcion());
+                } else {
+                    builder.ubicacionActual("EN_DEPOSITO")
+                           .descripcionUbicacion("En depósito: " + tramo.getOrigenDescripcion());
+                }
+                
+                builder.tramoActual(ContenedorPendienteResponse.TramoActual.builder()
+                        .idTramo(tramo.getId())
+                        .origen(tramo.getOrigenDescripcion())
+                        .destino(tramo.getDestinoDescripcion())
+                        .estadoTramo(tramo.getEstado())
+                        .patenteCamion(tramo.getPatenteCamion())
+                        .build());
+            } else {
+                // Buscar último tramo finalizado
+                Optional<Tramo> ultimoFinalizado = tramos.stream()
+                        .filter(t -> "FINALIZADO".equals(t.getEstado()))
+                        .reduce((first, second) -> second); // Obtener el último
+                
+                if (ultimoFinalizado.isPresent()) {
+                    builder.ubicacionActual("EN_DEPOSITO")
+                           .descripcionUbicacion("En depósito: " + 
+                                                ultimoFinalizado.get().getDestinoDescripcion());
+                } else {
+                    builder.ubicacionActual("PENDIENTE_ASIGNACION")
+                           .descripcionUbicacion("Pendiente de asignación de camión");
+                }
+            }
+        } else {
+            builder.ubicacionActual("ORIGEN")
+                   .descripcionUbicacion("En punto de origen: " + solicitud.getOrigenDireccion());
+        }
+        
+        return builder.build();
     }
 
     /**

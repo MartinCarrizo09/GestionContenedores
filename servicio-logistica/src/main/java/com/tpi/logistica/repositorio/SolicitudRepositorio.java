@@ -17,6 +17,8 @@ public interface SolicitudRepositorio extends JpaRepository<Solicitud, Long> {
 
     List<Solicitud> findByIdCliente(Long idCliente);
 
+    List<Solicitud> findByIdContenedor(Long idContenedor);
+
     List<Solicitud> findByEstado(String estado);
 
     boolean existsByNumeroSeguimiento(String numeroSeguimiento);

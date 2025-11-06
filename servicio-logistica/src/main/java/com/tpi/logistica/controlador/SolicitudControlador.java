@@ -5,6 +5,7 @@ import com.tpi.logistica.servicio.SolicitudServicio;
 import com.tpi.logistica.dto.EstimacionRutaRequest;
 import com.tpi.logistica.dto.EstimacionRutaResponse;
 import com.tpi.logistica.dto.SeguimientoSolicitudResponse;
+import com.tpi.logistica.dto.ContenedorPendienteResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -89,5 +90,13 @@ public class SolicitudControlador {
             @PathVariable String numeroSeguimiento) {
         SeguimientoSolicitudResponse seguimiento = servicio.obtenerSeguimiento(numeroSeguimiento);
         return ResponseEntity.ok(seguimiento);
+    }
+
+    @GetMapping("/pendientes")
+    public ResponseEntity<List<ContenedorPendienteResponse>> listarPendientes(
+            @RequestParam(required = false) String estado,
+            @RequestParam(required = false) Long idContenedor) {
+        List<ContenedorPendienteResponse> pendientes = servicio.listarPendientes(estado, idContenedor);
+        return ResponseEntity.ok(pendientes);
     }
 }

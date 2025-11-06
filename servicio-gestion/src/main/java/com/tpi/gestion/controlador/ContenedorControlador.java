@@ -2,6 +2,7 @@ package com.tpi.gestion.controlador;
 
 import com.tpi.gestion.modelo.Contenedor;
 import com.tpi.gestion.servicio.ContenedorServicio;
+import com.tpi.gestion.dto.EstadoContenedorResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +27,13 @@ public class ContenedorControlador {
     @GetMapping("/cliente/{idCliente}")
     public List<Contenedor> listarPorCliente(@PathVariable Long idCliente) {
         return servicio.listarPorCliente(idCliente);
+    }
+
+    // Ruta más específica PRIMERO - debe ir antes de /{id}
+    @GetMapping("/{id}/estado")
+    public ResponseEntity<EstadoContenedorResponse> obtenerEstado(@PathVariable Long id) {
+        EstadoContenedorResponse estado = servicio.obtenerEstado(id);
+        return ResponseEntity.ok(estado);
     }
 
     @GetMapping("/{id}")
