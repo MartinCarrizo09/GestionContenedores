@@ -117,10 +117,10 @@ GET  http://localhost:8080/api-gestion/tarifas
 
 ### **Servicio Flota (Puerto 8081):**
 ```
-GET  http://localhost:8080/api-flota/camiones
-GET  http://localhost:8080/api-flota/camiones/disponibles
-GET  http://localhost:8080/api-flota/camiones/AB123CD
-POST http://localhost:8080/api-flota/camiones
+GET  http://localhost:8081/api-flota/camiones
+GET  http://localhost:8081/api-flota/camiones/disponibles
+GET  http://localhost:8081/api-flota/camiones/AB123CD
+POST http://localhost:8081/api-flota/camiones
 ```
 
 ### **Servicio Logística (Puerto 8082):**

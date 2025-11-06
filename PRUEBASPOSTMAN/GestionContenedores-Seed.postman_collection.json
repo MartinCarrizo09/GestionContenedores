@@ -1,0 +1,217 @@
+{
+  "info": {
+    "name": "GestionContenedores - Seed Database",
+    "description": "Colección para poblar la base de datos con datos de prueba",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_gestion",
+      "value": "http://localhost:8080/api-gestion",
+      "type": "string"
+    },
+    {
+      "key": "base_flota",
+      "value": "http://localhost:8081/api-flota",
+      "type": "string"
+    },
+    {
+      "key": "base_logistica",
+      "value": "http://localhost:8082/api-logistica",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1 - Crear Clientes (50)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Cliente creado exitosamente', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "// Guardar el ID del cliente creado",
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    const clientIds = JSON.parse(pm.environment.get('clientIds') || '[]');",
+              "    clientIds.push(response.id);",
+              "    pm.environment.set('clientIds', JSON.stringify(clientIds));",
+              "    console.log('Cliente ID:', response.id, '- Total clientes:', clientIds.length);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"{{nombre}}\",\n  \"apellido\": \"{{apellido}}\",\n  \"email\": \"{{email}}\",\n  \"telefono\": \"{{telefono}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_gestion}}/clientes",
+          "host": ["{{base_gestion}}"],
+          "path": ["clientes"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2 - Obtener IDs de Clientes",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const clientes = pm.response.json();",
+              "const ids = clientes.map(c => c.id);",
+              "pm.environment.set('clientIds', JSON.stringify(ids));",
+              "console.log('✅ Total clientes obtenidos:', ids.length);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_gestion}}/clientes",
+          "host": ["{{base_gestion}}"],
+          "path": ["clientes"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3 - Crear Contenedores (200)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Seleccionar un cliente aleatorio",
+              "const clientIds = JSON.parse(pm.environment.get('clientIds') || '[]');",
+              "if (clientIds.length === 0) {",
+              "    throw new Error('No hay clientes disponibles. Ejecuta primero \"Obtener IDs de Clientes\"');",
+              "}",
+              "const randomClientId = clientIds[Math.floor(Math.random() * clientIds.length)];",
+              "pm.variables.set('randomClientId', randomClientId);"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Contenedor creado exitosamente', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    const contIds = JSON.parse(pm.environment.get('contenedorIds') || '[]');",
+              "    contIds.push(response.id);",
+              "    pm.environment.set('contenedorIds', JSON.stringify(contIds));",
+              "    console.log('Contenedor ID:', response.id, '- Total contenedores:', contIds.length);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"codigoIdentificacion\": \"{{codigoIdentificacion}}\",\n  \"peso\": {{peso}},\n  \"volumen\": {{volumen}},\n  \"idCliente\": {{randomClientId}}\n}"
+        },
+        "url": {
+          "raw": "{{base_gestion}}/contenedores",
+          "host": ["{{base_gestion}}"],
+          "path": ["contenedores"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "4 - Obtener IDs de Contenedores",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const contenedores = pm.response.json();",
+              "const ids = contenedores.map(c => c.id);",
+              "pm.environment.set('contenedorIds', JSON.stringify(ids));",
+              "console.log('✅ Total contenedores obtenidos:', ids.length);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_gestion}}/contenedores",
+          "host": ["{{base_gestion}}"],
+          "path": ["contenedores"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "5 - Verificar Totales",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const clientes = pm.response.json();",
+              "console.log('📊 RESUMEN:');",
+              "console.log('   Clientes creados:', clientes.length);",
+              "",
+              "const clientIds = JSON.parse(pm.environment.get('clientIds') || '[]');",
+              "const contIds = JSON.parse(pm.environment.get('contenedorIds') || '[]');",
+              "console.log('   IDs de clientes guardados:', clientIds.length);",
+              "console.log('   IDs de contenedores guardados:', contIds.length);",
+              "",
+              "pm.test('Se crearon 50+ clientes', function() {",
+              "    pm.expect(clientes.length).to.be.at.least(50);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_gestion}}/clientes",
+          "host": ["{{base_gestion}}"],
+          "path": ["clientes"]
+        }
+      },
+      "response": []
+    }
+  ]
+}
