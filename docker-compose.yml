@@ -77,13 +77,13 @@ services:
       - tpi-network
     healthcheck:
       # Verificar que Keycloak esté respondiendo
-      # Usamos el endpoint raíz que siempre existe (no requiere realm creado)
-      # Alternativamente, si el health endpoint está habilitado, lo usamos
-      test: ["CMD-SHELL", "curl -f http://localhost:9090/health/ready || curl -f http://localhost:9090/ || exit 1"]
+      # Usamos una verificación TCP simple que funciona sin herramientas adicionales
+      # El endpoint raíz de Keycloak responde cuando el servidor está listo
+      test: ["CMD-SHELL", "timeout 5 bash -c 'until (exec 3<>/dev/tcp/localhost/9090) 2>/dev/null; do sleep 1; done' || exit 1"]
       interval: 15s
-      timeout: 5s
-      retries: 20
-      start_period: 240s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
     restart: unless-stopped
 
   # ============================================================
@@ -104,6 +104,9 @@ services:
       # Si el token se obtuvo desde el host con localhost:9090, el issuer será localhost:9090
       # El Gateway valida el issuer del token, pero obtiene los JWKs usando la URL interna (keycloak:9090)
       KEYCLOAK_ISSUER_URI: http://localhost:9090/realms/tpi-backend
+      # Lista de issuers permitidos (separados por coma)
+      # Permite validar tokens obtenidos tanto internamente (keycloak:9090) como externamente (localhost:9090)
+      KEYCLOAK_ALLOWED_ISSUERS: http://localhost:9090/realms/tpi-backend,http://keycloak:9090/realms/tpi-backend
       KEYCLOAK_JWK_SET_URI: http://keycloak:9090/realms/tpi-backend/protocol/openid-connect/certs
       GATEWAY_LOG_LEVEL: INFO
       SECURITY_LOG_LEVEL: DEBUG
