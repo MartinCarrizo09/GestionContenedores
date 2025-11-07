@@ -50,7 +50,9 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:26.0.7
     container_name: tpi-keycloak
-    command: start-dev
+    command:
+      - start-dev
+      - --health-enabled=true
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin123}
@@ -72,10 +74,10 @@ services:
     networks:
       - tpi-network
     healthcheck:
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/9090 && echo -e 'GET /realms/master/.well-known/openid-configuration HTTP/1.1\r\nHost: localhost\r\n\r\n' >&3 && cat <&3 | grep -q '200 OK'"]
-      interval: 30s
-      timeout: 10s
-      retries: 10
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9090/realms/tpi-backend/.well-known/openid-configuration || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
       start_period: 180s
     restart: unless-stopped
 
