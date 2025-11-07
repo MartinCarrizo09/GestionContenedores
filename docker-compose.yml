@@ -100,7 +100,10 @@ services:
       SERVICIO_FLOTA_URL: http://servicio-flota:8082
       SERVICIO_LOGISTICA_URL: http://servicio-logistica:8083
       KEYCLOAK_URL: http://keycloak:9090
-      KEYCLOAK_ISSUER_URI: http://keycloak:9090/realms/tpi-backend
+      # IMPORTANTE: El issuer-uri debe coincidir EXACTAMENTE con el 'iss' claim del token
+      # Si el token se obtuvo desde el host con localhost:9090, el issuer será localhost:9090
+      # El Gateway valida el issuer del token, pero obtiene los JWKs usando la URL interna (keycloak:9090)
+      KEYCLOAK_ISSUER_URI: http://localhost:9090/realms/tpi-backend
       KEYCLOAK_JWK_SET_URI: http://keycloak:9090/realms/tpi-backend/protocol/openid-connect/certs
       GATEWAY_LOG_LEVEL: INFO
       SECURITY_LOG_LEVEL: DEBUG
@@ -108,7 +111,7 @@ services:
       - "8080:8080"
     depends_on:
       keycloak:
-        condition: service_healthy
+        condition: service_started  # Cambiado temporalmente de service_healthy a service_started
       servicio-gestion:
         condition: service_started
       servicio-flota:

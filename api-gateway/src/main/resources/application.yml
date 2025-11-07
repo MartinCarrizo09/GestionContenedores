@@ -87,9 +87,11 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          # El issuer-uri debe coincidir con el 'iss' del token (localhost porque el cliente obtiene tokens desde el host)
+          # IMPORTANTE: El issuer-uri debe coincidir EXACTAMENTE con el 'iss' claim del token JWT
+          # Si los tokens se obtienen desde el host usando localhost:9090, el issuer será localhost:9090
+          # El Gateway valida el issuer del token, pero obtiene los JWKs usando la URL interna de Docker
           issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:9090/realms/tpi-backend}
-          # El jwk-set-uri usa el nombre del contenedor porque el Gateway valida desde dentro de Docker
+          # El jwk-set-uri usa el nombre del contenedor porque el Gateway obtiene las claves desde dentro de Docker
           jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://keycloak:9090/realms/tpi-backend/protocol/openid-connect/certs}
 
 # ========== Actuator (Health Checks) ==========
