@@ -53,6 +53,7 @@ public class SecurityConfig {
                 // ========== CLIENTE - Requisitos 1 y 2 (ESPECÍFICOS PRIMERO) ==========
                 .pathMatchers(HttpMethod.POST, "/api/logistica/solicitudes").hasRole("CLIENTE")
                 .pathMatchers(HttpMethod.GET, "/api/gestion/contenedores/*/estado").hasRole("CLIENTE")
+                .pathMatchers(HttpMethod.GET, "/api/gestion/contenedores/codigo/*/estado").hasRole("CLIENTE")
                 .pathMatchers(HttpMethod.GET, "/api/logistica/solicitudes/cliente/*").hasRole("CLIENTE")
                 
                 // ========== OPERADOR - Requisitos 3, 4, 5, 6, 10 (ESPECÍFICOS PRIMERO) ==========

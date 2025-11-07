@@ -30,7 +30,31 @@ public class ContenedorControlador {
     }
 
     /**
-     * Consulta el estado actual de un contenedor.
+     * Buscar contenedor por código de identificación.
+     * Permite buscar con el código alfanumérico (ej: CONT001, REEF-20-00173)
+     */
+    @GetMapping("/codigo/{codigo}")
+    public ResponseEntity<Contenedor> buscarPorCodigo(@PathVariable String codigo) {
+        return servicio.buscarPorCodigo(codigo)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Consulta el estado actual de un contenedor por CÓDIGO.
+     * Devuelve información del contenedor, cliente, solicitud activa y ubicación actual.
+     * 
+     * ✅ Requisito 2 del TPI (rol: CLIENTE)
+     * Devuelve: datos del contenedor + cliente + solicitud activa + ubicación + tramo actual
+     */
+    @GetMapping("/codigo/{codigo}/estado")
+    public ResponseEntity<EstadoContenedorResponse> obtenerEstadoPorCodigo(@PathVariable String codigo) {
+        EstadoContenedorResponse estado = servicio.obtenerEstadoPorCodigo(codigo);
+        return ResponseEntity.ok(estado);
+    }
+
+    /**
+     * Consulta el estado actual de un contenedor por ID.
      * Devuelve información del contenedor, cliente, solicitud activa y ubicación actual.
      * 
      * ✅ Requisito 2 del TPI (rol: CLIENTE)

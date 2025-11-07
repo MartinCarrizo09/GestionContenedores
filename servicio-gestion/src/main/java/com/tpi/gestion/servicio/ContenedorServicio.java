@@ -38,6 +38,10 @@ public class ContenedorServicio {
         return contenedorRepo.findById(id);
     }
 
+    public Optional<Contenedor> buscarPorCodigo(String codigo) {
+        return contenedorRepo.findByCodigoIdentificacion(codigo);
+    }
+
     public Contenedor guardar(Contenedor nuevo) {
         if (contenedorRepo.existsByCodigoIdentificacion(nuevo.getCodigoIdentificacion())) {
             throw new RuntimeException("Ya existe un contenedor con ese código de identificación");
@@ -137,5 +141,14 @@ public class ContenedorServicio {
         }
         
         return builder.build();
+    }
+
+    /**
+     * Obtiene el estado actual de un contenedor por código de identificación.
+     */
+    public EstadoContenedorResponse obtenerEstadoPorCodigo(String codigo) {
+        Contenedor contenedor = contenedorRepo.findByCodigoIdentificacion(codigo)
+                .orElseThrow(() -> new RuntimeException("Contenedor no encontrado con código: " + codigo));
+        return obtenerEstado(contenedor.getId());
     }
 }

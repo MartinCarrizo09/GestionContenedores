@@ -14,4 +14,7 @@ public interface ContenedorRepositorio extends JpaRepository<Contenedor, Long> {
 
     // Verificar si existe un contenedor con el mismo código
     boolean existsByCodigoIdentificacion(String codigoIdentificacion);
+
+    // Buscar contenedor por código de identificación
+    java.util.Optional<Contenedor> findByCodigoIdentificacion(String codigoIdentificacion);
 }
