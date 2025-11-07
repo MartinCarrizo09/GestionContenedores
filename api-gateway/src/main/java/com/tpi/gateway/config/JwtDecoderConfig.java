@@ -7,11 +7,6 @@ import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 
-/**
- * Configura un decodificador JWT personalizado que permite resolver los JWKs
- * usando la URL interna del contenedor (keycloak:9090) y valida el issuer del
- * token con la URL que ve el cliente (localhost:9090).
- */
 @Configuration
 public class JwtDecoderConfig {
 

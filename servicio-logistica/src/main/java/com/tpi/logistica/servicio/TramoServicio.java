@@ -15,9 +15,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Arrays;
 
-/**
- * Servicio que contiene la lógica de negocio para gestionar tramos.
- */
 @Service
 public class TramoServicio {
 
@@ -27,7 +24,7 @@ public class TramoServicio {
     private final CalculoTarifaServicio calculoTarifaServicio;
     private final RestTemplate restTemplate;
 
-    // Constructor con inyección de dependencias
+
     public TramoServicio(TramoRepositorio repositorio,
                         SolicitudRepositorio solicitudRepositorio,
                         RutaRepositorio rutaRepositorio,
@@ -86,29 +83,21 @@ public class TramoServicio {
         repositorio.deleteById(id);
     }
 
-    /**
-     * Asigna un camión a un tramo.
-     * Valida que el camión pueda transportar el contenedor (peso y volumen).
-     * 
-     * ✅ Req 6: Asignar camión a tramo
-     * ✅ Req 8: Validar peso del contenedor contra capacidad del camión
-     * ✅ Req 11: Validar volumen del contenedor contra capacidad del camión
-     */
     @Transactional
     public Tramo asignarCamion(Long idTramo, String patenteCamion, Double pesoContenedor, Double volumenContenedor) {
         Tramo tramo = repositorio.findById(idTramo)
                 .orElseThrow(() -> new RuntimeException("Tramo no encontrado"));
 
-        // Validar estado del tramo
+
         if (!"ESTIMADO".equals(tramo.getEstado())) {
             throw new RuntimeException("Solo se pueden asignar camiones a tramos en estado ESTIMADO");
         }
 
-        // ✅ IMPLEMENTADO: Validar capacidad del camión con servicio-flota
+
         String urlFlota = "http://localhost:8081/camiones/aptos?peso=" + pesoContenedor + "&volumen=" + volumenContenedor;
         
         try {
-            // Llamar al servicio-flota para obtener camiones aptos
+
             CamionDTO[] camionesAptos = restTemplate.getForObject(urlFlota, CamionDTO[].class);
             
             if (camionesAptos == null || camionesAptos.length == 0) {
@@ -116,7 +105,7 @@ public class TramoServicio {
                     "(peso: " + pesoContenedor + "kg, volumen: " + volumenContenedor + "m³)");
             }
             
-            // Verificar que el camión especificado está en la lista de aptos
+
             boolean camionApto = Arrays.stream(camionesAptos)
                 .anyMatch(c -> c.getPatente().equals(patenteCamion));
             
@@ -135,22 +124,18 @@ public class TramoServicio {
                 ". Verifique que el servicio-flota esté disponible en http://localhost:8081");
         } catch (Exception e) {
             if (e instanceof RuntimeException) {
-                throw e; // Re-lanzar excepciones de validación
+                throw e; 
             }
             throw new RuntimeException("Error inesperado al validar capacidad del camión: " + e.getMessage());
         }
 
-        // Asignar camión y cambiar estado
+
         tramo.setPatenteCamion(patenteCamion);
         tramo.setEstado("ASIGNADO");
 
         return repositorio.save(tramo);
     }
     
-    /**
-     * DTO interno para deserializar respuesta del servicio-flota.
-     * Solo incluye los campos necesarios para validación.
-     */
     private static class CamionDTO {
         private String patente;
         private Double capacidadPeso;
@@ -167,9 +152,6 @@ public class TramoServicio {
         public void setDisponible(Boolean disponible) { this.disponible = disponible; }
     }
 
-    /**
-     * Inicia un tramo registrando la fecha/hora real de inicio.
-     */
     @Transactional
     public Tramo iniciarTramo(Long idTramo) {
         Tramo tramo = repositorio.findById(idTramo)
@@ -185,10 +167,6 @@ public class TramoServicio {
         return repositorio.save(tramo);
     }
 
-    /**
-     * Finaliza un tramo registrando la fecha/hora real de fin.
-     * Si es el último tramo de la ruta, calcula el costo y tiempo real total.
-     */
     @Transactional
     public Tramo finalizarTramo(Long idTramo, Double kmReales, Double costoKmCamion, Double consumoCamion) {
         Tramo tramo = repositorio.findById(idTramo)
@@ -199,22 +177,22 @@ public class TramoServicio {
         }
 
         tramo.setFechaFinReal(LocalDateTime.now());
-        tramo.setDistanciaKm(kmReales); // Actualiza con distancia real
+        tramo.setDistanciaKm(kmReales); 
         tramo.setEstado("FINALIZADO");
 
-        // Calcular costo real del tramo
+
         Double costoReal = calculoTarifaServicio.calcularCostoRealTramo(kmReales, costoKmCamion, consumoCamion);
         tramo.setCostoReal(costoReal);
 
         tramo = repositorio.save(tramo);
 
-        // Verificar si es el último tramo y actualizar la solicitud
+
         List<Tramo> tramosRuta = repositorio.findByIdRuta(tramo.getIdRuta());
         boolean todosFinalizados = tramosRuta.stream()
                 .allMatch(t -> "FINALIZADO".equals(t.getEstado()));
 
         if (todosFinalizados) {
-            // Calcular costo y tiempo real total
+
             actualizarSolicitudFinal(tramo.getIdRuta(), tramosRuta);
         }
 
@@ -223,7 +201,7 @@ public class TramoServicio {
 
     private void actualizarSolicitudFinal(Long idRuta, List<Tramo> tramos) {
 
-        // Calcular tiempo real total en horas
+
         final Duration[] tiempoTotal = {Duration.ZERO};
         final Double[] costoTotal = {0.0};
 
@@ -238,10 +216,10 @@ public class TramoServicio {
             }
         }
 
-        // ✅ MEJORADO: Buscar la solicitud correcta asociada a la ruta
+
         rutaRepositorio.findById(idRuta).ifPresent(ruta -> {
             solicitudRepositorio.findById(ruta.getIdSolicitud()).ifPresent(solicitud -> {
-                // Actualizar solo si está en estado apropiado
+
                 if ("PROGRAMADA".equals(solicitud.getEstado()) || "EN_TRANSITO".equals(solicitud.getEstado())) {
                     solicitud.setTiempoReal(tiempoTotal[0].toHours() + (tiempoTotal[0].toMinutesPart() / 60.0));
                     solicitud.setCostoFinal(costoTotal[0]);

@@ -4,10 +4,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
-/**
- * Representa una tarifa base del sistema.
- * Se usa para definir costos según peso y volumen.
- */
 @Entity
 @Table(name = "tarifas", schema = "gestion")
 @Getter

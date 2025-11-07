@@ -4,10 +4,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
-/**
- * Entidad Ruta según DER.
- * Campos: id, id_solicitud
- */
 @Entity
 @Table(name = "rutas", schema = "logistica")
 @Getter

@@ -2,9 +2,6 @@ package com.tpi.gestion.dto;
 
 import lombok.*;
 
-/**
- * DTO para recibir información de solicitud desde servicio-logistica.
- */
 @Data
 @Builder
 @NoArgsConstructor
@@ -21,11 +18,11 @@ public class SolicitudLogisticaDTO {
     private Double tiempoEstimado;
     private Double tiempoReal;
     
-    // Ubicación actual
+
     private String ubicacionActual;
     private String descripcionUbicacion;
     
-    // Tramo actual
+
     private TramoActual tramoActual;
     
     @Data

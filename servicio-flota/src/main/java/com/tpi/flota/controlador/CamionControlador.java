@@ -8,9 +8,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * Controlador REST para gestionar los camiones de la flota.
- */
 @RestController
 @RequestMapping("/camiones")
 public class CamionControlador {

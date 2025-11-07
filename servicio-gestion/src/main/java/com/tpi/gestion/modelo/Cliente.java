@@ -6,10 +6,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
-/**
- * Representa un cliente del sistema.
- * Los clientes pueden generar solicitudes y tener contenedores asociados.
- */
 @Entity
 @Table(name = "clientes", schema = "gestion")
 @Getter

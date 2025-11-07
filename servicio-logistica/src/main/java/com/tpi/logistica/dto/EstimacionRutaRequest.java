@@ -2,9 +2,6 @@ package com.tpi.logistica.dto;
 
 import lombok.*;
 
-/**
- * DTO para solicitar estimación de ruta.
- */
 @Getter
 @Setter
 @NoArgsConstructor

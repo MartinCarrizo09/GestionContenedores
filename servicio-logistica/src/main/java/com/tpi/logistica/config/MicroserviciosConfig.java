@@ -3,10 +3,6 @@ package com.tpi.logistica.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * Configuración de URLs de otros microservicios.
- * Permite cambiar entre localhost (desarrollo) y nombres de servicio (Docker).
- */
 @Configuration
 public class MicroserviciosConfig {
 

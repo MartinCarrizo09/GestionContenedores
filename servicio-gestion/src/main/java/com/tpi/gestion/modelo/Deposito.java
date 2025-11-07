@@ -5,10 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.DecimalMin;
 import lombok.*;
 
-/**
- * Entidad que representa un depósito físico dentro del sistema.
- * Será persistida en la base de datos PostgreSQL.
- */
 
 @Entity
 @Table(name = "depositos", schema = "gestion")

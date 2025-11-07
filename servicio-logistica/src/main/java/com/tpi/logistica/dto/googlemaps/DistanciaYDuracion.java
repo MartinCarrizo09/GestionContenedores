@@ -2,9 +2,6 @@ package com.tpi.logistica.dto.googlemaps;
 
 import lombok.*;
 
-/**
- * DTO simplificado con la información relevante de distancia y duración.
- */
 @Getter
 @Setter
 @NoArgsConstructor

@@ -5,10 +5,6 @@ import lombok.*;
 
 import java.util.List;
 
-/**
- * DTO para respuesta de Google Maps Distance Matrix API.
- * https://developers.google.com/maps/documentation/distance-matrix/overview
- */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -48,8 +44,8 @@ public class GoogleMapsDistanceResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Distance {
-        private Long value;  // en metros
-        private String text; // "702 km"
+        private Long value;  
+        private String text; 
     }
 
     @Getter
@@ -57,8 +53,8 @@ public class GoogleMapsDistanceResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Duration {
-        private Long value;  // en segundos
-        private String text; // "7 hours 30 mins"
+        private Long value;  
+        private String text; 
     }
 }
 

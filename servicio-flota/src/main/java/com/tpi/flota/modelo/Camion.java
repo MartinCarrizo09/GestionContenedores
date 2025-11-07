@@ -6,11 +6,6 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
 
-/**
- * Entidad que representa un camión de la flota.
- * Según DER: patente, nombre_transportista, telefono_transportista,
- * capacidad_peso, capacidad_volumen, consumo_combustible_km, costo_km, disponible
- */
 @Entity
 @Table(name = "camiones", schema = "flota")
 @Getter

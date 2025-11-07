@@ -7,12 +7,6 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-/**
- * Entidad Tramo según DER.
- * Campos: id, id_ruta, patente_camion, origen_descripcion, destino_descripcion,
- * distancia_km, estado, fecha_inicio_estimada, fecha_fin_estimada,
- * fecha_inicio_real, fecha_fin_real
- */
 @Entity
 @Table(name = "tramos", schema = "logistica")
 @Getter

@@ -3,9 +3,6 @@ package com.tpi.logistica.dto;
 import lombok.*;
 import java.util.List;
 
-/**
- * DTO para respuesta de estimación de ruta.
- */
 @Getter
 @Setter
 @NoArgsConstructor

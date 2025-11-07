@@ -10,12 +10,6 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Controlador de fallback para Circuit Breaker
- * 
- * Cuando un microservicio no responde o está caído,
- * el Gateway devuelve estas respuestas amigables
- */
 @RestController
 @RequestMapping("/fallback")
 public class FallbackController {

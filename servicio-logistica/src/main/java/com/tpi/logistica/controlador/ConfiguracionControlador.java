@@ -8,9 +8,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * Controlador REST para gestionar configuraciones.
- */
 @RestController
 @RequestMapping("/configuraciones")
 public class ConfiguracionControlador {

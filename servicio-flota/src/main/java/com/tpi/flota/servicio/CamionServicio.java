@@ -7,9 +7,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Servicio que contiene la lógica de negocio para gestionar camiones.
- */
 @Service
 public class CamionServicio {
 
@@ -31,9 +28,6 @@ public class CamionServicio {
         return repositorio.findByDisponible(true);
     }
 
-    /**
-     * Valida si un camión puede transportar un contenedor según peso y volumen.
-     */
     public boolean puedeTransportar(String patente, Double pesoContenedor, Double volumenContenedor) {
         return buscarPorPatente(patente)
                 .map(camion ->
@@ -43,9 +37,6 @@ public class CamionServicio {
                 .orElse(false);
     }
 
-    /**
-     * Encuentra camiones aptos para transportar un contenedor.
-     */
     public List<Camion> encontrarCamionesAptos(Double pesoContenedor, Double volumenContenedor) {
         return repositorio.findByDisponible(true).stream()
                 .filter(c -> c.getCapacidadPeso() >= pesoContenedor &&

@@ -5,13 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
-/**
- * Entidad Solicitud según DER.
- * Campos: id, numero_seguimiento, id_contenedor, id_cliente,
- * origen_direccion, origen_latitud, origen_longitud,
- * destino_direccion, destino_latitud, destino_longitud,
- * estado, costo_estimado, tiempo_estimado, costo_final, tiempo_real
- */
 @Entity
 @Table(name = "solicitudes", schema = "logistica")
 @Getter

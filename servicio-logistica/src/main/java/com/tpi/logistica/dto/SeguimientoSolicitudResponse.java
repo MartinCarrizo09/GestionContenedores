@@ -4,9 +4,6 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * DTO para respuesta de seguimiento de solicitud con historial cronológico.
- */
 @Getter
 @Setter
 @NoArgsConstructor

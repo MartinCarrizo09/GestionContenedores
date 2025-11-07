@@ -1,0 +1,68 @@
+# ============================================================
+# Servicio de Logística - PostgreSQL Local con Docker
+# Schema: logistica
+# Tablas: solicitudes, rutas, tramos
+# ============================================================
+
+spring:
+  application:
+    name: servicio-logistica
+
+  # ========== Configuración de Base de Datos PostgreSQL Local ==========
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:bd-tpi-backend}?currentSchema=logistica
+    username: ${DB_USER:admin}
+    password: ${DB_PASSWORD:admin123}
+    driver-class-name: org.postgresql.Driver
+    
+    # Configuración del pool de conexiones HikariCP
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      pool-name: LogisticaHikariPool
+
+  # ========== Configuración JPA / Hibernate ==========
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    # IMPORTANTE: none no crea/modifica tablas, las crea el script init-db.sql
+    hibernate:
+      ddl-auto: none
+    show-sql: ${SHOW_SQL:true}
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+        # Schema por defecto para este microservicio
+        default_schema: logistica
+        jdbc:
+          lob:
+            non_contextual_creation: true
+
+# ========== Configuración del Servidor ==========
+server:
+  port: ${SERVER_PORT:8082}
+  servlet:
+    context-path: /api-logistica
+
+# ========== Google Maps API Configuration ==========
+google:
+  maps:
+    api:
+      key: ${GOOGLE_MAPS_API_KEY:AIzaSyAUp0j1WFgacoQYTKhtPI-CF6Ld7a7jHSg}
+
+# ========== Configuración de Microservicios ==========
+servicio:
+  gestion:
+    url: ${SERVICIO_GESTION_URL:http://localhost:8080/api-gestion}
+  flota:
+    url: ${SERVICIO_FLOTA_URL:http://localhost:8081/api-flota}
+
+# ========== Logging ==========
+logging:
+  level:
+    com.tpi.logistica: ${LOG_LEVEL:INFO}
+    org.hibernate.SQL: ${SQL_LOG_LEVEL:DEBUG}
+    org.hibernate.type.descriptor.sql.BasicBinder: ${SQL_PARAMS_LOG_LEVEL:TRACE}

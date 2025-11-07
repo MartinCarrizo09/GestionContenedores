@@ -4,10 +4,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
-/**
- * Entidad Configuracion según DER.
- * Campos: id, clave, valor
- */
 @Entity
 @Table(name = "configuracion", schema = "logistica")
 @Getter

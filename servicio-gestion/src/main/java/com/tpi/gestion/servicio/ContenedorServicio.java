@@ -47,7 +47,7 @@ public class ContenedorServicio {
             throw new RuntimeException("Ya existe un contenedor con ese código de identificación");
         }
 
-        // Validar que el cliente exista antes de guardar
+
         Cliente cliente = clienteRepo.findById(nuevo.getCliente().getId())
                 .orElseThrow(() -> new RuntimeException("El cliente indicado no existe"));
 
@@ -62,7 +62,7 @@ public class ContenedorServicio {
                     c.setPeso(datos.getPeso());
                     c.setVolumen(datos.getVolumen());
                     
-                    // Buscar y cargar el cliente completo si viene un ID de cliente
+
                     if (datos.getCliente() != null && datos.getCliente().getId() != null) {
                         Cliente cliente = clienteRepo.findById(datos.getCliente().getId())
                                 .orElseThrow(() -> new RuntimeException("El cliente indicado no existe"));
@@ -78,16 +78,12 @@ public class ContenedorServicio {
         contenedorRepo.deleteById(id);
     }
 
-    /**
-     * Obtiene el estado actual de un contenedor consultando al servicio de logística.
-     * Combina información del contenedor con su solicitud de transporte activa.
-     */
     public EstadoContenedorResponse obtenerEstado(Long id) {
-        // Buscar contenedor en este servicio
+
         Contenedor contenedor = contenedorRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Contenedor no encontrado"));
         
-        // Construir información básica del contenedor
+
         EstadoContenedorResponse.EstadoContenedorResponseBuilder builder = 
                 EstadoContenedorResponse.builder()
                 .idContenedor(contenedor.getId())
@@ -95,7 +91,7 @@ public class ContenedorServicio {
                 .peso(contenedor.getPeso())
                 .volumen(contenedor.getVolumen());
         
-        // Agregar información del cliente
+
         if (contenedor.getCliente() != null) {
             builder.cliente(EstadoContenedorResponse.ClienteInfo.builder()
                     .id(contenedor.getCliente().getId())
@@ -105,13 +101,13 @@ public class ContenedorServicio {
                     .build());
         }
         
-        // Consultar solicitud activa en servicio de logística
+
         Optional<SolicitudLogisticaDTO> solicitudOpt = logisticaCliente.obtenerSolicitudActiva(id);
         
         if (solicitudOpt.isPresent()) {
             SolicitudLogisticaDTO solicitud = solicitudOpt.get();
             
-            // Agregar información de la solicitud
+
             builder.solicitud(EstadoContenedorResponse.SolicitudInfo.builder()
                     .id(solicitud.getId())
                     .numeroSeguimiento(solicitud.getNumeroSeguimiento())
@@ -120,11 +116,11 @@ public class ContenedorServicio {
                     .costoFinal(solicitud.getCostoFinal())
                     .build());
             
-            // Agregar ubicación actual
+
             builder.ubicacionActual(solicitud.getUbicacionActual())
                    .descripcionUbicacion(solicitud.getDescripcionUbicacion());
             
-            // Agregar información del tramo actual si existe
+
             if (solicitud.getTramoActual() != null) {
                 SolicitudLogisticaDTO.TramoActual tramoLogistica = solicitud.getTramoActual();
                 builder.tramoActual(EstadoContenedorResponse.TramoInfo.builder()
@@ -135,7 +131,7 @@ public class ContenedorServicio {
                         .build());
             }
         } else {
-            // No hay solicitud activa para este contenedor
+
             builder.ubicacionActual("SIN_SOLICITUD")
                    .descripcionUbicacion("El contenedor no tiene una solicitud de transporte activa");
         }
@@ -143,9 +139,6 @@ public class ContenedorServicio {
         return builder.build();
     }
 
-    /**
-     * Obtiene el estado actual de un contenedor por código de identificación.
-     */
     public EstadoContenedorResponse obtenerEstadoPorCodigo(String codigo) {
         Contenedor contenedor = contenedorRepo.findByCodigoIdentificacion(codigo)
                 .orElseThrow(() -> new RuntimeException("Contenedor no encontrado con código: " + codigo));

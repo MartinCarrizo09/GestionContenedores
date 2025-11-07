@@ -8,9 +8,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * Controlador REST para gestionar tramos.
- */
 @RestController
 @RequestMapping("/tramos")
 public class TramoControlador {
@@ -65,14 +62,6 @@ public class TramoControlador {
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Asigna un camión a un tramo.
-     * Valida que el camión tenga capacidad suficiente para el contenedor.
-     * 
-     * ✅ Requisito 6 del TPI
-     * ✅ Requisito 8: Validación de peso
-     * ✅ Requisito 11: Validación de volumen
-     */
     @PutMapping("/{id}/asignar-camion")
     public ResponseEntity<Tramo> asignarCamion(@PathVariable Long id,
                                                @RequestParam String patente,
@@ -82,29 +71,12 @@ public class TramoControlador {
         return ResponseEntity.ok(tramo);
     }
 
-    /**
-     * Inicia un tramo registrando la fecha/hora real de inicio.
-     * Solo puede iniciarse si el tramo está en estado ASIGNADO.
-     * 
-     * ✅ Requisito 7 del TPI (rol: TRANSPORTISTA)
-     * Transición: ASIGNADO → INICIADO
-     * Registra: fechaInicioReal
-     */
     @PatchMapping("/{id}/iniciar")
     public ResponseEntity<Tramo> iniciarTramo(@PathVariable Long id) {
         Tramo tramo = servicio.iniciarTramo(id);
         return ResponseEntity.ok(tramo);
     }
 
-    /**
-     * Finaliza un tramo registrando la fecha/hora real, kilómetros reales y costo real.
-     * Si es el último tramo de la ruta, actualiza la solicitud a ENTREGADA.
-     * 
-     * ✅ Requisito 9 del TPI (rol: TRANSPORTISTA)
-     * Transición: INICIADO → FINALIZADO
-     * Registra: fechaFinReal, kmReales, costoReal
-     * Si último tramo → Solicitud: PROGRAMADA/EN_TRANSITO → ENTREGADA
-     */
     @PatchMapping("/{id}/finalizar")
     public ResponseEntity<Tramo> finalizarTramo(@PathVariable Long id,
                                                @RequestParam Double kmReales,

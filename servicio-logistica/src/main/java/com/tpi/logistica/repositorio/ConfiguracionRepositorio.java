@@ -6,9 +6,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-/**
- * Repositorio para gestionar las operaciones de persistencia de Configuracion.
- */
 @Repository
 public interface ConfiguracionRepositorio extends JpaRepository<Configuracion, Long> {
 

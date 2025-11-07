@@ -7,10 +7,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
-/**
- * Entidad que representa un contenedor físico a transportar.
- * Está asociado a un cliente y se usa en los traslados logísticos.
- */
 @Entity
 @Table(name = "contenedores", schema = "gestion")
 @Getter
@@ -40,6 +36,6 @@ public class Contenedor {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_cliente", nullable = false)
     @NotNull(message = "El contenedor debe pertenecer a un cliente")
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) //linea de codigo que me tiro el cloude para arreglar los endpoints de contenedores
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) 
     private Cliente cliente;
 }
