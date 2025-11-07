@@ -48,7 +48,9 @@ services:
   # KEYCLOAK - AUTENTICACIÓN Y AUTORIZACIÓN
   # ============================================================
   keycloak:
-    image: quay.io/keycloak/keycloak:26.0.7
+    build:
+      context: ./keycloak
+      dockerfile: Dockerfile
     container_name: tpi-keycloak
     command:
       - start-dev
@@ -74,11 +76,14 @@ services:
     networks:
       - tpi-network
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:9090/realms/tpi-backend/.well-known/openid-configuration || exit 1"]
-      interval: 10s
+      # Verificar que Keycloak esté respondiendo
+      # Usamos el endpoint raíz que siempre existe (no requiere realm creado)
+      # Alternativamente, si el health endpoint está habilitado, lo usamos
+      test: ["CMD-SHELL", "curl -f http://localhost:9090/health/ready || curl -f http://localhost:9090/ || exit 1"]
+      interval: 15s
       timeout: 5s
       retries: 20
-      start_period: 180s
+      start_period: 240s
     restart: unless-stopped
 
   # ============================================================

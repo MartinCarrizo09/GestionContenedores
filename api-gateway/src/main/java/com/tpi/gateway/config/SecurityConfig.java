@@ -43,36 +43,38 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             
             // Configuración de autorización
+            // IMPORTANTE: Las reglas más específicas deben ir ANTES de las generales
             .authorizeExchange(exchanges -> exchanges
                 // ========== Endpoints públicos ==========
                 .pathMatchers("/auth/**").permitAll()
                 .pathMatchers("/actuator/health/**").permitAll()
                 .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()  // CORS preflight
                 
-                // ========== CLIENTE - Requisitos 1 y 2 ==========
+                // ========== CLIENTE - Requisitos 1 y 2 (ESPECÍFICOS PRIMERO) ==========
                 .pathMatchers(HttpMethod.POST, "/api/logistica/solicitudes").hasRole("CLIENTE")
                 .pathMatchers(HttpMethod.GET, "/api/gestion/contenedores/*/estado").hasRole("CLIENTE")
                 .pathMatchers(HttpMethod.GET, "/api/logistica/solicitudes/cliente/*").hasRole("CLIENTE")
                 
-                // ========== OPERADOR - Requisitos 3, 4, 5, 6, 10 ==========
+                // ========== OPERADOR - Requisitos 3, 4, 5, 6, 10 (ESPECÍFICOS PRIMERO) ==========
                 .pathMatchers(HttpMethod.POST, "/api/logistica/solicitudes/estimar-ruta").hasRole("OPERADOR")
                 .pathMatchers(HttpMethod.POST, "/api/logistica/solicitudes/*/asignar-ruta").hasRole("OPERADOR")
                 .pathMatchers(HttpMethod.GET, "/api/logistica/solicitudes/pendientes").hasRole("OPERADOR")
                 .pathMatchers(HttpMethod.PUT, "/api/logistica/tramos/*/asignar-camion").hasRole("OPERADOR")
                 
-                // CRUD de maestros (Operador)
-                .pathMatchers("/api/gestion/depositos/**").hasRole("OPERADOR")
-                .pathMatchers("/api/gestion/tarifas/**").hasRole("OPERADOR")
-                .pathMatchers("/api/flota/camiones/**").hasRole("OPERADOR")
-                .pathMatchers("/api/gestion/clientes/**").hasRole("OPERADOR")
-                .pathMatchers("/api/gestion/contenedores/**").hasRole("OPERADOR")
-                
-                // ========== TRANSPORTISTA - Requisitos 7 y 9 ==========
+                // ========== TRANSPORTISTA - Requisitos 7 y 9 (ESPECÍFICOS PRIMERO) ==========
                 .pathMatchers(HttpMethod.PATCH, "/api/logistica/tramos/*/iniciar").hasRole("TRANSPORTISTA")
                 .pathMatchers(HttpMethod.PATCH, "/api/logistica/tramos/*/finalizar").hasRole("TRANSPORTISTA")
                 .pathMatchers(HttpMethod.GET, "/api/logistica/tramos/camion/*").hasRole("TRANSPORTISTA")
                 
-                // ========== Endpoints generales (cualquier rol autenticado) ==========
+                // ========== CRUD de maestros (Operador) - REGLAS GENERALES DESPUÉS ==========
+                .pathMatchers("/api/gestion/depositos/**").hasRole("OPERADOR")
+                .pathMatchers("/api/gestion/tarifas/**").hasRole("OPERADOR")
+                .pathMatchers("/api/flota/camiones/**").hasRole("OPERADOR")
+                .pathMatchers("/api/gestion/clientes/**").hasRole("OPERADOR")
+                // IMPORTANTE: Esta regla debe ir DESPUÉS de la regla específica de CLIENTE para /contenedores/*/estado
+                .pathMatchers("/api/gestion/contenedores/**").hasRole("OPERADOR")
+                
+                // ========== Endpoints generales GET (cualquier rol autenticado) ==========
                 .pathMatchers(HttpMethod.GET, "/api/**").authenticated()
                 
                 // Cualquier otra petición debe estar autenticada
