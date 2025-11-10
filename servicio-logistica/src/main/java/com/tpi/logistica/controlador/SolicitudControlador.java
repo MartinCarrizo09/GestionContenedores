@@ -6,6 +6,8 @@ import com.tpi.logistica.dto.EstimacionRutaRequest;
 import com.tpi.logistica.dto.EstimacionRutaResponse;
 import com.tpi.logistica.dto.SeguimientoSolicitudResponse;
 import com.tpi.logistica.dto.ContenedorPendienteResponse;
+import com.tpi.logistica.dto.SolicitudCompletaRequest;
+import com.tpi.logistica.dto.SolicitudCompletaResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -55,6 +57,25 @@ public class SolicitudControlador {
     public ResponseEntity<Solicitud> crear(@Valid @RequestBody Solicitud solicitud) {
         Solicitud nueva = servicio.guardar(solicitud);
         return ResponseEntity.ok(nueva);
+    }
+
+    /**
+     * Crea una solicitud completa incluyendo cliente y contenedor si no existen.
+     * Este endpoint implementa el requerimiento de crear la solicitud junto con el contenedor.
+     * 
+     * Casos de uso:
+     * 1. Cliente nuevo + Contenedor nuevo: Se crean ambos automáticamente
+     * 2. Cliente existente + Contenedor nuevo: Se usa el cliente existente y se crea el contenedor
+     * 3. Cliente existente + Contenedor existente: Se usan ambos existentes
+     * 
+     * @param request Datos completos de la solicitud, cliente y contenedor
+     * @return Response con IDs generados e información de qué se creó
+     */
+    @PostMapping("/completa")
+    public ResponseEntity<SolicitudCompletaResponse> crearSolicitudCompleta(
+            @Valid @RequestBody SolicitudCompletaRequest request) {
+        SolicitudCompletaResponse response = servicio.crearSolicitudCompleta(request);
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}")

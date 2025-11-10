@@ -1,0 +1,53 @@
+package com.tpi.flota.config;
+
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.info.Contact;
+import io.swagger.v3.oas.models.servers.Server;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
+
+/**
+ * Configuración de OpenAPI/Swagger para el Servicio de Flota.
+ * 
+ * Proporciona documentación interactiva de la API REST en:
+ * - Swagger UI: http://localhost:8082/api-flota/swagger-ui.html
+ * - OpenAPI JSON: http://localhost:8082/api-flota/api-docs
+ */
+@Configuration
+public class OpenApiConfig {
+
+    @Bean
+    public OpenAPI flotaOpenAPI() {
+        return new OpenAPI()
+            .info(new Info()
+                .title("API - Servicio de Flota")
+                .description("""
+                    Microservicio de Gestión de Flota de Camiones.
+                    
+                    **Responsabilidades:**
+                    - Gestión de Camiones (CRUD)
+                    - Control de disponibilidad de vehículos
+                    - Gestión de capacidades (peso y volumen)
+                    - Asignación de camiones a tramos
+                    
+                    **Puerto:** 8082
+                    **Context Path:** /api-flota
+                    **Base de Datos:** PostgreSQL (Schema: flota)
+                    """)
+                .version("1.0.0")
+                .contact(new Contact()
+                    .name("Equipo de Desarrollo TPI")
+                    .email("desarrollo@tpi.com")))
+            .servers(List.of(
+                new Server()
+                    .url("http://localhost:8082/api-flota")
+                    .description("Servidor Local - Desarrollo"),
+                new Server()
+                    .url("http://localhost:8080/servicio-flota")
+                    .description("A través del API Gateway")
+            ));
+    }
+}

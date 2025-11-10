@@ -50,6 +50,34 @@ server:
 # ========== Logging ==========
 logging:
   level:
-    com.tpi.flota: ${LOG_LEVEL:INFO}
+    root: INFO
+    com.tpi.flota: ${LOG_LEVEL:DEBUG}
+    org.springframework.web: INFO
+    org.springframework.security: INFO
     org.hibernate.SQL: ${SQL_LOG_LEVEL:DEBUG}
     org.hibernate.type.descriptor.sql.BasicBinder: ${SQL_PARAMS_LOG_LEVEL:TRACE}
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} %-5level [%thread] %logger{36} - %msg%n"
+  file:
+    name: logs/servicio-flota.log
+
+# ========== Configuración de Swagger/OpenAPI ==========
+springdoc:
+  api-docs:
+    path: /api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operationsSorter: alpha
+    tagsSorter: alpha
+  show-actuator: false
+
+# ========== Configuración de Seguridad (OAuth2 Resource Server) ==========
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:9090/realms/tpi-realm}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:9090/realms/tpi-realm/protocol/openid-connect/certs}

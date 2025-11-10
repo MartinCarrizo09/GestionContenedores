@@ -4,6 +4,8 @@ import com.tpi.logistica.modelo.Tramo;
 import com.tpi.logistica.repositorio.TramoRepositorio;
 import com.tpi.logistica.repositorio.SolicitudRepositorio;
 import com.tpi.logistica.repositorio.RutaRepositorio;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -14,9 +16,12 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.Arrays;
+import java.util.Comparator;
 
 @Service
 public class TramoServicio {
+
+    private static final Logger log = LoggerFactory.getLogger(TramoServicio.class);
 
     private final TramoRepositorio repositorio;
     private final SolicitudRepositorio solicitudRepositorio;
@@ -216,6 +221,9 @@ public class TramoServicio {
             }
         }
 
+        // Calcular el costo de estadías en depósitos entre tramos consecutivos
+        Double costoEstadias = calcularEstadiasEnDepositos(tramos);
+        costoTotal[0] += costoEstadias;
 
         rutaRepositorio.findById(idRuta).ifPresent(ruta -> {
             solicitudRepositorio.findById(ruta.getIdSolicitud()).ifPresent(solicitud -> {
@@ -226,11 +234,70 @@ public class TramoServicio {
                     solicitud.setEstado("ENTREGADA");
                     solicitudRepositorio.save(solicitud);
                     
-                    System.out.println("✅ Solicitud ID " + solicitud.getId() + " marcada como ENTREGADA");
-                    System.out.println("   - Costo final: $" + costoTotal[0]);
-                    System.out.println("   - Tiempo real: " + solicitud.getTiempoReal() + " horas");
+                    log.info("Solicitud ID {} marcada como ENTREGADA", solicitud.getId());
+                    log.debug("   - Costo final: ${}", costoTotal[0]);
+                    log.debug("   - Costo estadías: ${}", costoEstadias);
+                    log.debug("   - Tiempo real: {} horas", solicitud.getTiempoReal());
                 }
             });
         });
+    }
+
+    /**
+     * Calcula el costo de estadías en depósitos entre tramos consecutivos.
+     * Se considera estadía el tiempo entre la finalización de un tramo y el inicio del siguiente.
+     * La consigna requiere: "Estadía en depósitos (calculada a partir de la diferencia 
+     * entre fechas reales de entrada y salida del tramo correspondiente)"
+     * 
+     * @param tramos Lista de tramos de la ruta
+     * @return Costo total de estadías
+     */
+    private Double calcularEstadiasEnDepositos(List<Tramo> tramos) {
+        if (tramos == null || tramos.size() <= 1) {
+            return 0.0;
+        }
+
+        // Ordenar tramos por fecha de inicio real
+        List<Tramo> tramosOrdenados = tramos.stream()
+            .filter(t -> t.getFechaInicioReal() != null && t.getFechaFinReal() != null)
+            .sorted(Comparator.comparing(Tramo::getFechaInicioReal))
+            .toList();
+
+        if (tramosOrdenados.size() <= 1) {
+            return 0.0;
+        }
+
+        Double costoTotalEstadias = 0.0;
+        // Costo estándar por día de estadía en depósito
+        // La consigna indica: "Cada depósito debe mantener un costo de estadía diario"
+        // Usamos un valor fijo de $500/día como configuración estándar
+        final Double COSTO_ESTADIA_DIA = 500.0;
+
+        // Calcular estadías entre tramos consecutivos
+        for (int i = 0; i < tramosOrdenados.size() - 1; i++) {
+            Tramo tramoActual = tramosOrdenados.get(i);
+            Tramo tramoSiguiente = tramosOrdenados.get(i + 1);
+
+            LocalDateTime finTramoActual = tramoActual.getFechaFinReal();
+            LocalDateTime inicioTramoSiguiente = tramoSiguiente.getFechaInicioReal();
+
+            // Calcular duración de la estadía
+            Duration duracionEstadia = Duration.between(finTramoActual, inicioTramoSiguiente);
+            
+            // Si hay estadía (tiempo positivo entre tramos)
+            if (duracionEstadia.toHours() > 0) {
+                // Calcular días de estadía (redondear hacia arriba)
+                double diasEstadia = Math.ceil(duracionEstadia.toHours() / 24.0);
+                Double costoEstadia = diasEstadia * COSTO_ESTADIA_DIA;
+                costoTotalEstadias += costoEstadia;
+                
+                log.info("Estadía calculada entre {} y {}", 
+                    tramoActual.getDestinoDescripcion(), tramoSiguiente.getOrigenDescripcion());
+                log.debug("   - Duración: {} horas ({} días)", duracionEstadia.toHours(), diasEstadia);
+                log.debug("   - Costo: ${}", costoEstadia);
+            }
+        }
+
+        return costoTotalEstadias;
     }
 }

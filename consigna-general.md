@@ -55,22 +55,22 @@ Se definen tres roles principales:
 ## Requerimientos funcionales mínimos
 
 1. Registrar una nueva solicitud de transporte de contenedor. (Cliente)
-1. La solicitud incluye la creación del contenedor con su identificación única
-2. La solicitud incluye el registro del cliente si no existe previamente
-3. Las solicitudes deben registrar un estado, por ejemplo: [borrador - programada - en tránsito entregada]
-4. Consultar el estado del transporte de un contenedor. (Cliente)
-5. Consultar rutas tentativas con todos los tramos sugeridos y el tiempo y costo estimados. (Operador / Administrador)
-6. Asignar una ruta con todos sus tramos a la solicitud. (Operador/Administrador)
-7. Consultar todos los contenedores pendientes de entrega y su ubicación / estado con filtros. (Operador/Administrador)
-8. Asignar camión a un tramo de traslado de un contenedor. (Operador/Administrador)
-9. Determinar el inicio o fin de un tramo de traslado. (Transportista)
-10. Calcular el costo total de la entrega, incluyendo:
-11. Recorrido total (distancia entre origen $\rightarrow$ depósitos y depósitos $\rightarrow$ destino)
-12. Peso y volumen del contenedor
-13. Estadía en depósitos (calculada a partir de la diferencia entre fechas reales de entrada y salida del tramo correspondiente)
-14. Al finalizar registrar el cálculo de tiempo real y el cálculo de costo real en la solicitud.
-15. Registrar y actualizar depósitos, camiones y tarifas.
-16. Validar que un camión no supere su capacidad máxima en peso ni volumen.
+     La solicitud incluye la creación del contenedor con su identificación única
+     La solicitud incluye el registro del cliente si no existe previamente
+     Las solicitudes deben registrar un estado, por ejemplo: [borrador - programada - en tránsito entregada]
+2. Consultar el estado del transporte de un contenedor. (Cliente)
+3. Consultar rutas tentativas con todos los tramos sugeridos y el tiempo y costo estimados. (Operador / Administrador)
+4. Asignar una ruta con todos sus tramos a la solicitud. (Operador/Administrador)
+5. Consultar todos los contenedores pendientes de entrega y su ubicación / estado con filtros. (Operador/Administrador)
+6. Asignar camión a un tramo de traslado de un contenedor. (Operador/Administrador)
+7. Determinar el inicio o fin de un tramo de traslado. (Transportista)
+8. Calcular el costo total de la entrega, incluyendo:
+    Recorrido total (distancia entre origen $\rightarrow$ depósitos y depósitos $\rightarrow$ destino)
+    Peso y volumen del contenedor
+    Estadía en depósitos (calculada a partir de la diferencia entre fechas reales de entrada y salida del tramo correspondiente)
+9. Al finalizar registrar el cálculo de tiempo real y el cálculo de costo real en la solicitud.
+10. Registrar y actualizar depósitos, camiones y tarifas.
+11. Validar que un camión no supere su capacidad máxima en peso ni volumen.
 [!Note] Se deja libertad a los alumnos para la configuración de las tarifas de traslado y estadía en depósito teniendo en cuenta que:
 
 ---

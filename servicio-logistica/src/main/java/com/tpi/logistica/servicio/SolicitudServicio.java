@@ -10,7 +10,11 @@ import com.tpi.logistica.dto.EstimacionRutaRequest;
 import com.tpi.logistica.dto.EstimacionRutaResponse;
 import com.tpi.logistica.dto.SeguimientoSolicitudResponse;
 import com.tpi.logistica.dto.ContenedorPendienteResponse;
+import com.tpi.logistica.dto.SolicitudCompletaRequest;
+import com.tpi.logistica.dto.SolicitudCompletaResponse;
 import com.tpi.logistica.dto.googlemaps.DistanciaYDuracion;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -23,6 +27,8 @@ import java.util.ArrayList;
 
 @Service
 public class SolicitudServicio {
+
+    private static final Logger log = LoggerFactory.getLogger(SolicitudServicio.class);
 
     private final SolicitudRepositorio repositorio;
     private final RutaRepositorio rutaRepositorio;
@@ -96,7 +102,7 @@ public class SolicitudServicio {
             
         } catch (HttpClientErrorException.NotFound e) {
 
-            System.out.println("⚠️ Cliente ID " + idCliente + " no encontrado. Creando automáticamente...");
+            log.warn("Cliente ID {} no encontrado. Creando automáticamente...", idCliente);
             
             ClienteDTO nuevoCliente = new ClienteDTO();
             nuevoCliente.setNombre("Cliente");
@@ -107,8 +113,9 @@ public class SolicitudServicio {
             
             try {
                 restTemplate.postForObject("http://localhost:8080/clientes", nuevoCliente, ClienteDTO.class);
-                System.out.println("✅ Cliente ID " + idCliente + " creado automáticamente");
+                log.info("Cliente ID {} creado automáticamente", idCliente);
             } catch (Exception ex) {
+                log.error("Error al crear cliente automáticamente: {}", ex.getMessage());
                 throw new RuntimeException("Error al crear cliente automáticamente: " + ex.getMessage());
             }
             
@@ -162,6 +169,7 @@ public class SolicitudServicio {
         private String codigoIdentificacion;
         private Double peso;
         private Double volumen;
+        private ClienteDTO cliente;
         
         public Long getId() { return id; }
         public void setId(Long id) { this.id = id; }
@@ -171,6 +179,8 @@ public class SolicitudServicio {
         public void setPeso(Double peso) { this.peso = peso; }
         public Double getVolumen() { return volumen; }
         public void setVolumen(Double volumen) { this.volumen = volumen; }
+        public ClienteDTO getCliente() { return cliente; }
+        public void setCliente(ClienteDTO cliente) { this.cliente = cliente; }
     }
 
     public Solicitud actualizar(Long id, Solicitud datosActualizados) {
@@ -197,6 +207,163 @@ public class SolicitudServicio {
 
     public void eliminar(Long id) {
         repositorio.deleteById(id);
+    }
+
+    /**
+     * Crea una solicitud completa incluyendo la creación automática del cliente y contenedor si no existen.
+     * Este método implementa el requerimiento de crear la solicitud junto con el contenedor y cliente.
+     * 
+     * @param request DTO con todos los datos necesarios
+     * @return Response con los IDs generados y banderas indicando qué se creó
+     */
+    @Transactional
+    public SolicitudCompletaResponse crearSolicitudCompleta(SolicitudCompletaRequest request) {
+        boolean clienteCreado = false;
+        boolean contenedorCreado = false;
+        Long idCliente;
+        Long idContenedor;
+
+        // ========== PASO 1: Validar o crear el CLIENTE ==========
+        if (request.getIdCliente() != null) {
+            // Si se proporciona ID de cliente, validar que exista
+            idCliente = request.getIdCliente();
+            validarOCrearCliente(idCliente);
+        } else {
+            // Si no se proporciona ID, crear cliente con los datos del request
+            if (request.getClienteNombre() == null || request.getClienteApellido() == null) {
+                throw new RuntimeException("Debe proporcionar el ID del cliente o los datos completos (nombre, apellido, email) para crear uno nuevo");
+            }
+            
+            idCliente = crearCliente(
+                request.getClienteNombre(),
+                request.getClienteApellido(),
+                request.getClienteEmail(),
+                request.getClienteTelefono(),
+                request.getClienteCuil()
+            );
+            clienteCreado = true;
+        }
+
+        // ========== PASO 2: Validar o crear el CONTENEDOR ==========
+        if (request.getIdContenedor() != null) {
+            // Si se proporciona ID de contenedor, validar que exista
+            idContenedor = request.getIdContenedor();
+            validarContenedor(idContenedor);
+        } else {
+            // Si no se proporciona ID, crear contenedor con los datos del request
+            if (request.getCodigoIdentificacion() == null || request.getPeso() == null || request.getVolumen() == null) {
+                throw new RuntimeException("Debe proporcionar el ID del contenedor o los datos completos (código, peso, volumen) para crear uno nuevo");
+            }
+            
+            idContenedor = crearContenedor(
+                request.getCodigoIdentificacion(),
+                request.getPeso(),
+                request.getVolumen(),
+                idCliente
+            );
+            contenedorCreado = true;
+        }
+
+        // ========== PASO 3: Crear la SOLICITUD ==========
+        Solicitud nuevaSolicitud = Solicitud.builder()
+            .numeroSeguimiento(request.getNumeroSeguimiento())
+            .idCliente(idCliente)
+            .idContenedor(idContenedor)
+            .origenDireccion(request.getOrigenDireccion())
+            .origenLatitud(request.getOrigenLatitud())
+            .origenLongitud(request.getOrigenLongitud())
+            .destinoDireccion(request.getDestinoDireccion())
+            .destinoLatitud(request.getDestinoLatitud())
+            .destinoLongitud(request.getDestinoLongitud())
+            .estado("BORRADOR")
+            .build();
+
+        if (repositorio.existsByNumeroSeguimiento(nuevaSolicitud.getNumeroSeguimiento())) {
+            throw new RuntimeException("Ya existe una solicitud con ese número de seguimiento");
+        }
+
+        Solicitud solicitudGuardada = repositorio.save(nuevaSolicitud);
+
+        // ========== PASO 4: Construir respuesta ==========
+        String mensaje = String.format(
+            "✅ Solicitud creada exitosamente. %s %s",
+            clienteCreado ? "Cliente creado automáticamente." : "Cliente existente utilizado.",
+            contenedorCreado ? "Contenedor creado automáticamente." : "Contenedor existente utilizado."
+        );
+
+        return SolicitudCompletaResponse.builder()
+            .idSolicitud(solicitudGuardada.getId())
+            .numeroSeguimiento(solicitudGuardada.getNumeroSeguimiento())
+            .estado(solicitudGuardada.getEstado())
+            .idCliente(idCliente)
+            .clienteCreado(clienteCreado)
+            .idContenedor(idContenedor)
+            .codigoIdentificacion(request.getCodigoIdentificacion())
+            .contenedorCreado(contenedorCreado)
+            .origenDireccion(request.getOrigenDireccion())
+            .destinoDireccion(request.getDestinoDireccion())
+            .mensaje(mensaje)
+            .build();
+    }
+
+    /**
+     * Crea un nuevo cliente en el servicio de gestión.
+     * 
+     * @return ID del cliente creado
+     */
+    private Long crearCliente(String nombre, String apellido, String email, String telefono, String cuil) {
+        String urlGestion = "http://localhost:8080/api-gestion/clientes";
+        
+        ClienteDTO nuevoCliente = new ClienteDTO();
+        nuevoCliente.setNombre(nombre);
+        nuevoCliente.setApellido(apellido);
+        nuevoCliente.setEmail(email != null ? email : "cliente-" + System.currentTimeMillis() + "@autogenerado.com");
+        nuevoCliente.setTelefono(telefono != null ? telefono : "+54-11-0000-0000");
+        nuevoCliente.setCuil(cuil != null ? cuil : "20-00000000-0");
+        
+        try {
+            ClienteDTO clienteCreado = restTemplate.postForObject(urlGestion, nuevoCliente, ClienteDTO.class);
+            if (clienteCreado != null && clienteCreado.getId() != null) {
+                log.info("Cliente creado automáticamente con ID: {}", clienteCreado.getId());
+                return clienteCreado.getId();
+            } else {
+                throw new RuntimeException("Error: El servicio de gestión no retornó el ID del cliente creado");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error al crear cliente en servicio-gestion: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Crea un nuevo contenedor en el servicio de gestión.
+     * 
+     * @return ID del contenedor creado
+     */
+    private Long crearContenedor(String codigoIdentificacion, Double peso, Double volumen, Long idCliente) {
+        String urlGestion = "http://localhost:8080/api-gestion/contenedores";
+        
+        ContenedorDTO nuevoContenedor = new ContenedorDTO();
+        nuevoContenedor.setCodigoIdentificacion(codigoIdentificacion);
+        nuevoContenedor.setPeso(peso);
+        nuevoContenedor.setVolumen(volumen);
+        
+        // El contenedor necesita el cliente asociado
+        ClienteDTO cliente = new ClienteDTO();
+        cliente.setId(idCliente);
+        nuevoContenedor.setCliente(cliente);
+        
+        try {
+            ContenedorDTO contenedorCreado = restTemplate.postForObject(urlGestion, nuevoContenedor, ContenedorDTO.class);
+            if (contenedorCreado != null && contenedorCreado.getId() != null) {
+                log.info("Contenedor creado automáticamente con ID: {} y código: {}", 
+                    contenedorCreado.getId(), codigoIdentificacion);
+                return contenedorCreado.getId();
+            } else {
+                throw new RuntimeException("Error: El servicio de gestión no retornó el ID del contenedor creado");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error al crear contenedor en servicio-gestion: " + e.getMessage());
+        }
     }
 
     public EstimacionRutaResponse estimarRuta(EstimacionRutaRequest request) {

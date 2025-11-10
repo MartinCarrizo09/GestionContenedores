@@ -170,6 +170,7 @@ CREATE INDEX IF NOT EXISTS idx_tramo_estado ON logistica.tramos(estado);
 COMMENT ON COLUMN logistica.tramos.estado IS 'Estados: ESTIMADO, ASIGNADO, INICIADO, FINALIZADO';
 
 
+
 -- Tabla: CONFIGURACION
 CREATE TABLE IF NOT EXISTS logistica.configuracion (
     id BIGSERIAL PRIMARY KEY,
