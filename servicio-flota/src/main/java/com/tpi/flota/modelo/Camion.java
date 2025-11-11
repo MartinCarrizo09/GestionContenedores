@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "camiones", schema = "flota")
@@ -37,10 +38,12 @@ public class Camion {
 
     @Positive(message = "El consumo de combustible debe ser mayor a 0")
     @Column(name = "consumo_combustible_km")
+    @JsonProperty("consumoCombustibleKm")  // Asegurar nombre correcto en JSON
     private Double consumoCombustibleKm;
 
     @Positive(message = "El costo por km debe ser mayor a 0")
     @Column(name = "costo_km")
+    @JsonProperty("costoPorKm")  // Acepta tanto costoKm como costoPorKm en JSON
     private Double costoKm;
 
     @Builder.Default

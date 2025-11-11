@@ -42,6 +42,9 @@ public class RutaServicio {
     }
 
     public void eliminar(Long id) {
+        if (!repositorio.existsById(id)) {
+            throw new RuntimeException("Ruta no encontrada con ID: " + id);
+        }
         repositorio.deleteById(id);
     }
 }

@@ -206,6 +206,9 @@ public class SolicitudServicio {
     }
 
     public void eliminar(Long id) {
+        if (!repositorio.existsById(id)) {
+            throw new RuntimeException("Solicitud no encontrada con ID: " + id);
+        }
         repositorio.deleteById(id);
     }
 

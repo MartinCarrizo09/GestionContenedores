@@ -41,6 +41,15 @@ spring:
           lob:
             non_contextual_creation: true
 
+  # ========== Configuración de Seguridad (OAuth2 Resource Server) ==========
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Usar keycloak:9090 desde dentro de Docker, pero aceptar tokens con issuer localhost:9090 o keycloak:9090
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://keycloak:9090/realms/tpi-backend}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://keycloak:9090/realms/tpi-backend/protocol/openid-connect/certs}
+
 # ========== Configuración del Servidor ==========
 server:
   port: ${SERVER_PORT:8081}
@@ -72,12 +81,3 @@ springdoc:
     operationsSorter: alpha
     tagsSorter: alpha
   show-actuator: false
-
-# ========== Configuración de Seguridad (OAuth2 Resource Server) ==========
-spring:
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:9090/realms/tpi-realm}
-          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:9090/realms/tpi-realm/protocol/openid-connect/certs}

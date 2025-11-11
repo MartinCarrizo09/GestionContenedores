@@ -76,6 +76,9 @@ public class CamionServicio {
     }
 
     public void eliminar(String patente) {
+        if (!repositorio.existsById(patente)) {
+            throw new RuntimeException("Camión no encontrado con patente: " + patente);
+        }
         repositorio.deleteById(patente);
     }
 }

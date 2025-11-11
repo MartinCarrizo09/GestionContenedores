@@ -10,10 +10,10 @@
 
     <!-- APPENDER DE ARCHIVO CON ROTACIÓN DIARIA -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/servicio-gestion.log</file>
+        <file>/app/logs/servicio-gestion.log</file>
 
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>logs/servicio-gestion-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>/app/logs/servicio-gestion-%d{yyyy-MM-dd}.log</fileNamePattern>
             <!-- Mantener los últimos 7 días de logs -->
             <maxHistory>7</maxHistory>
         </rollingPolicy>

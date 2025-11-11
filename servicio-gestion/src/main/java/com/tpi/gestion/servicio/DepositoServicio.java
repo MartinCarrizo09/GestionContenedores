@@ -48,6 +48,9 @@ public class DepositoServicio {
 
 
     public void eliminar(Long id) {
+        if (!repositorio.existsById(id)) {
+            throw new RuntimeException("Depósito no encontrado con ID: " + id);
+        }
         repositorio.deleteById(id);
     }
 }

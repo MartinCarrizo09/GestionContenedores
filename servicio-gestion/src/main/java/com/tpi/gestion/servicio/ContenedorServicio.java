@@ -75,6 +75,9 @@ public class ContenedorServicio {
     }
 
     public void eliminar(Long id) {
+        if (!contenedorRepo.existsById(id)) {
+            throw new RuntimeException("Contenedor no encontrado con ID: " + id);
+        }
         contenedorRepo.deleteById(id);
     }
 

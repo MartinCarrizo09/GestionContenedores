@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * DTO para crear una solicitud completa incluyendo datos del cliente y contenedor.
@@ -52,7 +53,14 @@ public class SolicitudCompletaRequest {
     private Long idContenedor; // Si existe, se usa; si no, se crea con los datos siguientes
     
     @NotBlank(message = "El código de identificación del contenedor es obligatorio")
+    @JsonProperty("codigoIdentificacion")  // Acepta tanto codigoIdentificacion como contenedorCodigo
     private String codigoIdentificacion;
+    
+    // Alias para compatibilidad con tests que usan contenedorCodigo
+    @JsonProperty("contenedorCodigo")
+    public void setContenedorCodigo(String codigo) {
+        this.codigoIdentificacion = codigo;
+    }
     
     @NotNull(message = "El peso del contenedor es obligatorio")
     private Double peso;

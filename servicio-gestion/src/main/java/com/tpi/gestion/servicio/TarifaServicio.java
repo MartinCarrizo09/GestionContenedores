@@ -43,6 +43,9 @@ public class TarifaServicio {
     }
 
     public void eliminar(Long id) {
+        if (!repositorio.existsById(id)) {
+            throw new RuntimeException("Tarifa no encontrada con ID: " + id);
+        }
         repositorio.deleteById(id);
     }
 

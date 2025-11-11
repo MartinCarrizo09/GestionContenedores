@@ -85,6 +85,9 @@ public class TramoServicio {
     }
 
     public void eliminar(Long id) {
+        if (!repositorio.existsById(id)) {
+            throw new RuntimeException("Tramo no encontrado con ID: " + id);
+        }
         repositorio.deleteById(id);
     }
 
