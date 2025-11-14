@@ -156,6 +156,75 @@
 						"description": "Obtiene un token JWT para el rol OPERADOR. El token se guarda automáticamente en la variable `authToken`."
 					},
 					"response": []
+				},
+				{
+					"name": "Obtener Token - Transportista",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set('authToken', jsonData.access_token);",
+									"    pm.collectionVariables.set('authToken', jsonData.access_token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "tpi-client",
+									"type": "text"
+								},
+								{
+									"key": "username",
+									"value": "transportista@tpi.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "transportista123",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:9090/realms/tpi-backend/protocol/openid-connect/token",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9090",
+							"path": [
+								"realms",
+								"tpi-backend",
+								"protocol",
+								"openid-connect",
+								"token"
+							]
+						},
+						"description": "Obtiene un token JWT para el rol TRANSPORTISTA. El token se guarda automáticamente en la variable `authToken`."
+					},
+					"response": []
 				}
 			]
 		},
@@ -165,6 +234,16 @@
 				{
 					"name": "Listar Clientes",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -187,6 +266,16 @@
 				{
 					"name": "Obtener Cliente por ID",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -341,6 +430,16 @@
 				{
 					"name": "Listar Contenedores",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -363,6 +462,16 @@
 				{
 					"name": "Obtener Contenedor por Código",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -438,6 +547,16 @@
 				{
 					"name": "Listar Solicitudes",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -553,6 +672,16 @@
 				{
 					"name": "Obtener Solicitud por Número de Seguimiento",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -629,6 +758,16 @@
 				{
 					"name": "Listar Tarifas",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -651,6 +790,16 @@
 				{
 					"name": "Obtener Tarifa Aplicable",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
