@@ -28,8 +28,17 @@
 								"exec": [
 									"if (pm.response.code === 200) {",
 									"    var jsonData = pm.response.json();",
-									"    pm.environment.set('authToken', jsonData.access_token);",
-									"    pm.collectionVariables.set('authToken', jsonData.access_token);",
+									"    var token = jsonData.access_token;",
+									"    if (token) {",
+									"        pm.environment.set('authToken', token);",
+									"        pm.collectionVariables.set('authToken', token);",
+									"        console.log('✅ Token CLIENTE guardado correctamente');",
+									"        console.log('   Token: ' + token.substring(0, 30) + '...');",
+									"    } else {",
+									"        console.log('❌ Error: No se recibió access_token en la respuesta');",
+									"    }",
+									"} else {",
+									"    console.log('❌ Error al obtener token. Status: ' + pm.response.code);",
 									"}"
 								],
 								"type": "text/javascript"
@@ -97,8 +106,17 @@
 								"exec": [
 									"if (pm.response.code === 200) {",
 									"    var jsonData = pm.response.json();",
-									"    pm.environment.set('authToken', jsonData.access_token);",
-									"    pm.collectionVariables.set('authToken', jsonData.access_token);",
+									"    var token = jsonData.access_token;",
+									"    if (token) {",
+									"        pm.environment.set('authToken', token);",
+									"        pm.collectionVariables.set('authToken', token);",
+									"        console.log('✅ Token OPERADOR guardado correctamente');",
+									"        console.log('   Token: ' + token.substring(0, 30) + '...');",
+									"    } else {",
+									"        console.log('❌ Error: No se recibió access_token en la respuesta');",
+									"    }",
+									"} else {",
+									"    console.log('❌ Error al obtener token. Status: ' + pm.response.code);",
 									"}"
 								],
 								"type": "text/javascript"
@@ -166,8 +184,17 @@
 								"exec": [
 									"if (pm.response.code === 200) {",
 									"    var jsonData = pm.response.json();",
-									"    pm.environment.set('authToken', jsonData.access_token);",
-									"    pm.collectionVariables.set('authToken', jsonData.access_token);",
+									"    var token = jsonData.access_token;",
+									"    if (token) {",
+									"        pm.environment.set('authToken', token);",
+									"        pm.collectionVariables.set('authToken', token);",
+									"        console.log('✅ Token TRANSPORTISTA guardado correctamente');",
+									"        console.log('   Token: ' + token.substring(0, 30) + '...');",
+									"    } else {",
+									"        console.log('❌ Error: No se recibió access_token en la respuesta');",
+									"    }",
+									"} else {",
+									"    console.log('❌ Error al obtener token. Status: ' + pm.response.code);",
 									"}"
 								],
 								"type": "text/javascript"
@@ -884,6 +911,35 @@
 			"key": "authToken",
 			"value": "",
 			"type": "string"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Verificar que existe un token antes de cada request (excepto autenticación)",
+					"var urlPath = pm.request.url.getPath();",
+					"if (urlPath.indexOf('/token') === -1 && urlPath.indexOf('/auth') === -1) {",
+					"    var token = pm.collectionVariables.get('authToken');",
+					"    if (!token || token === '') {",
+					"        console.log('⚠️ No hay token guardado. Ejecuta primero \"Obtener Token - Operador\"');",
+					"    } else {",
+					"        console.log('✅ Token encontrado: ' + token.substring(0, 20) + '...');",
+					"    }",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
 		}
 	]
 }
