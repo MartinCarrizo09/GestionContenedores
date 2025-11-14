@@ -4,6 +4,7 @@ import com.tpi.logistica.modelo.Tramo;
 import com.tpi.logistica.repositorio.TramoRepositorio;
 import com.tpi.logistica.repositorio.SolicitudRepositorio;
 import com.tpi.logistica.repositorio.RutaRepositorio;
+import com.tpi.logistica.config.MicroserviciosConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -28,18 +29,20 @@ public class TramoServicio {
     private final RutaRepositorio rutaRepositorio;
     private final CalculoTarifaServicio calculoTarifaServicio;
     private final RestTemplate restTemplate;
-
+    private final MicroserviciosConfig microserviciosConfig;
 
     public TramoServicio(TramoRepositorio repositorio,
                         SolicitudRepositorio solicitudRepositorio,
                         RutaRepositorio rutaRepositorio,
                         CalculoTarifaServicio calculoTarifaServicio,
-                        RestTemplate restTemplate) {
+                        RestTemplate restTemplate,
+                        MicroserviciosConfig microserviciosConfig) {
         this.repositorio = repositorio;
         this.solicitudRepositorio = solicitudRepositorio;
         this.rutaRepositorio = rutaRepositorio;
         this.calculoTarifaServicio = calculoTarifaServicio;
         this.restTemplate = restTemplate;
+        this.microserviciosConfig = microserviciosConfig;
     }
 
     public List<Tramo> listar() {
@@ -81,7 +84,7 @@ public class TramoServicio {
                     tramo.setFechaFinReal(datosActualizados.getFechaFinReal());
                     return repositorio.save(tramo);
                 })
-                .orElseThrow(() -> new RuntimeException("Tramo no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Tramo no encontrado con ID: " + id));
     }
 
     public void eliminar(Long id) {
@@ -94,7 +97,7 @@ public class TramoServicio {
     @Transactional
     public Tramo asignarCamion(Long idTramo, String patenteCamion, Double pesoContenedor, Double volumenContenedor) {
         Tramo tramo = repositorio.findById(idTramo)
-                .orElseThrow(() -> new RuntimeException("Tramo no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Tramo no encontrado con ID: " + idTramo));
 
 
         if (!"ESTIMADO".equals(tramo.getEstado())) {
@@ -102,7 +105,7 @@ public class TramoServicio {
         }
 
 
-        String urlFlota = "http://localhost:8081/camiones/aptos?peso=" + pesoContenedor + "&volumen=" + volumenContenedor;
+        String urlFlota = microserviciosConfig.getServicioFlotaUrl() + "/camiones/aptos?peso=" + pesoContenedor + "&volumen=" + volumenContenedor;
         
         try {
 
@@ -113,7 +116,7 @@ public class TramoServicio {
                     "(peso: " + pesoContenedor + "kg, volumen: " + volumenContenedor + "m³)");
             }
             
-
+            
             boolean camionApto = Arrays.stream(camionesAptos)
                 .anyMatch(c -> c.getPatente().equals(patenteCamion));
             
@@ -129,7 +132,7 @@ public class TramoServicio {
             
         } catch (HttpClientErrorException e) {
             throw new RuntimeException("Error al consultar capacidad del camión en servicio-flota: " + e.getMessage() + 
-                ". Verifique que el servicio-flota esté disponible en http://localhost:8081");
+                ". Verifique que el servicio-flota esté disponible en " + microserviciosConfig.getServicioFlotaUrl());
         } catch (Exception e) {
             if (e instanceof RuntimeException) {
                 throw e; 
@@ -163,7 +166,7 @@ public class TramoServicio {
     @Transactional
     public Tramo iniciarTramo(Long idTramo) {
         Tramo tramo = repositorio.findById(idTramo)
-                .orElseThrow(() -> new RuntimeException("Tramo no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Tramo no encontrado con ID: " + idTramo));
 
         if (!"ASIGNADO".equals(tramo.getEstado())) {
             throw new RuntimeException("Solo se pueden iniciar tramos en estado ASIGNADO");
@@ -178,7 +181,7 @@ public class TramoServicio {
     @Transactional
     public Tramo finalizarTramo(Long idTramo, Double kmReales, Double costoKmCamion, Double consumoCamion) {
         Tramo tramo = repositorio.findById(idTramo)
-                .orElseThrow(() -> new RuntimeException("Tramo no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Tramo no encontrado con ID: " + idTramo));
 
         if (kmReales == null || kmReales <= 0) {
             throw new IllegalArgumentException("Los kilómetros reales deben ser mayores a 0");

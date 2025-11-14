@@ -244,6 +244,18 @@ function Test-CasoPrueba {
                 $jsonObj.PSObject.Properties.Remove('volumenMaximo')
             }
             
+            # Si es una solicitud completa y tiene "contenedorPeso" en vez de "peso", mapearlo
+            if ($endpoint -match "/solicitudes/completa" -and $jsonObj.contenedorPeso -and -not $jsonObj.peso) {
+                $jsonObj | Add-Member -MemberType NoteProperty -Name "peso" -Value $jsonObj.contenedorPeso -Force
+                $jsonObj.PSObject.Properties.Remove('contenedorPeso')
+            }
+            
+            # Si es una solicitud completa y tiene "contenedorVolumen" en vez de "volumen", mapearlo
+            if ($endpoint -match "/solicitudes/completa" -and $jsonObj.contenedorVolumen -and -not $jsonObj.volumen) {
+                $jsonObj | Add-Member -MemberType NoteProperty -Name "volumen" -Value $jsonObj.contenedorVolumen -Force
+                $jsonObj.PSObject.Properties.Remove('contenedorVolumen')
+            }
+            
             # Convertir a JSON con codificación UTF-8
             $body = $jsonObj | ConvertTo-Json -Depth 10 -Compress -ErrorAction Stop
             # Asegurar codificación UTF-8
@@ -376,6 +388,14 @@ if (-not (Test-Path $csvFile)) {
 }
 
 # Verificar que los servicios estén corriendo
+Write-Host "Verificando servicios..."
+
+# Crear datos iniciales necesarios para los casos de prueba
+Write-Host ""
+Write-Host "Creando datos iniciales..." -ForegroundColor Yellow
+& "$PSScriptRoot\crear-datos-iniciales.ps1" -GATEWAY_URL $baseUrl 2>&1 | Out-Null
+Write-Host ""
+
 Write-Host "Verificando servicios..." -ForegroundColor Cyan
 try {
     $healthCheck = Invoke-RestMethod -Uri "$baseUrl/actuator/health" -Method GET -ErrorAction Stop

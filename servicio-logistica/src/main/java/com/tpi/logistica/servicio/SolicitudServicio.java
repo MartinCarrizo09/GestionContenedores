@@ -100,12 +100,10 @@ public class SolicitudServicio {
         String urlGestion = microserviciosConfig.getServicioGestionUrl() + "/clientes/" + idCliente;
         
         try {
-
+            log.debug("Validando cliente ID {} en URL: {}", idCliente, urlGestion);
             restTemplate.getForObject(urlGestion, ClienteDTO.class);
-
             
         } catch (HttpClientErrorException.NotFound e) {
-
             log.warn("Cliente ID {} no encontrado. Creando automáticamente...", idCliente);
             
             ClienteDTO nuevoCliente = new ClienteDTO();
@@ -115,17 +113,22 @@ public class SolicitudServicio {
             nuevoCliente.setTelefono("+54-11-0000-0000");
             nuevoCliente.setCuil("20-" + String.format("%08d", idCliente) + "-0");
             
+            String urlCrearCliente = microserviciosConfig.getServicioGestionUrl() + "/clientes";
             try {
-                restTemplate.postForObject(microserviciosConfig.getServicioGestionUrl() + "/clientes", nuevoCliente, ClienteDTO.class);
+                log.debug("Creando cliente automáticamente en URL: {}", urlCrearCliente);
+                restTemplate.postForObject(urlCrearCliente, nuevoCliente, ClienteDTO.class);
                 log.info("Cliente ID {} creado automáticamente", idCliente);
             } catch (Exception ex) {
-                log.error("Error al crear cliente automáticamente: {}", ex.getMessage());
+                log.error("Error al crear cliente automáticamente en {}: {}", urlCrearCliente, ex.getMessage());
                 throw new RuntimeException("Error al crear cliente automáticamente: " + ex.getMessage());
             }
             
+        } catch (org.springframework.web.client.ResourceAccessException e) {
+            log.error("Error de conexión al validar cliente en {}: {}", urlGestion, e.getMessage());
+            throw new RuntimeException("Error de conexión al validar cliente con servicio-gestion en " + urlGestion + ": " + e.getMessage());
         } catch (Exception e) {
-            throw new RuntimeException("Error al validar cliente con servicio-gestion: " + e.getMessage() + 
-                ". Verifique que el servicio-gestion esté disponible en " + microserviciosConfig.getServicioGestionUrl());
+            log.error("Error al validar cliente en {}: {}", urlGestion, e.getMessage());
+            throw new RuntimeException("Error al validar cliente con servicio-gestion en " + urlGestion + ": " + e.getMessage());
         }
     }
     
@@ -185,6 +188,31 @@ public class SolicitudServicio {
         public void setVolumen(Double volumen) { this.volumen = volumen; }
         public ClienteDTO getCliente() { return cliente; }
         public void setCliente(ClienteDTO cliente) { this.cliente = cliente; }
+    }
+    
+    private static class TarifaDTO {
+        private Long id;
+        private String descripcion;
+        private Double rangoPesoMin;
+        private Double rangoPesoMax;
+        private Double rangoVolumenMin;
+        private Double rangoVolumenMax;
+        private Double valor;
+        
+        public Long getId() { return id; }
+        public void setId(Long id) { this.id = id; }
+        public String getDescripcion() { return descripcion; }
+        public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+        public Double getRangoPesoMin() { return rangoPesoMin; }
+        public void setRangoPesoMin(Double rangoPesoMin) { this.rangoPesoMin = rangoPesoMin; }
+        public Double getRangoPesoMax() { return rangoPesoMax; }
+        public void setRangoPesoMax(Double rangoPesoMax) { this.rangoPesoMax = rangoPesoMax; }
+        public Double getRangoVolumenMin() { return rangoVolumenMin; }
+        public void setRangoVolumenMin(Double rangoVolumenMin) { this.rangoVolumenMin = rangoVolumenMin; }
+        public Double getRangoVolumenMax() { return rangoVolumenMax; }
+        public void setRangoVolumenMax(Double rangoVolumenMax) { this.rangoVolumenMax = rangoVolumenMax; }
+        public Double getValor() { return valor; }
+        public void setValor(Double valor) { this.valor = valor; }
     }
 
     public Solicitud actualizar(Long id, Solicitud datosActualizados) {
@@ -329,6 +357,7 @@ public class SolicitudServicio {
         nuevoCliente.setCuil(cuil != null ? cuil : "20-00000000-0");
         
         try {
+            log.debug("Creando cliente en URL: {}", urlGestion);
             ClienteDTO clienteCreado = restTemplate.postForObject(urlGestion, nuevoCliente, ClienteDTO.class);
             if (clienteCreado != null && clienteCreado.getId() != null) {
                 log.info("Cliente creado automáticamente con ID: {}", clienteCreado.getId());
@@ -336,8 +365,12 @@ public class SolicitudServicio {
             } else {
                 throw new RuntimeException("Error: El servicio de gestión no retornó el ID del cliente creado");
             }
+        } catch (org.springframework.web.client.ResourceAccessException e) {
+            log.error("Error de conexión al crear cliente en {}: {}", urlGestion, e.getMessage());
+            throw new RuntimeException("Error de conexión al crear cliente en servicio-gestion en " + urlGestion + ": " + e.getMessage());
         } catch (Exception e) {
-            throw new RuntimeException("Error al crear cliente en servicio-gestion: " + e.getMessage());
+            log.error("Error al crear cliente en {}: {}", urlGestion, e.getMessage());
+            throw new RuntimeException("Error al crear cliente en servicio-gestion en " + urlGestion + ": " + e.getMessage());
         }
     }
 
@@ -374,6 +407,29 @@ public class SolicitudServicio {
     }
 
     public EstimacionRutaResponse estimarRuta(EstimacionRutaRequest request) {
+        // Si se proporcionan peso y volumen, validar que haya tarifa aplicable
+        if (request.getPesoKg() != null && request.getVolumenM3() != null) {
+            String urlGestion = microserviciosConfig.getServicioGestionUrl() + 
+                "/tarifas/aplicable?peso=" + request.getPesoKg() + "&volumen=" + request.getVolumenM3();
+            
+            try {
+                TarifaDTO tarifa = restTemplate.getForObject(urlGestion, TarifaDTO.class);
+                
+                if (tarifa == null) {
+                    throw new RuntimeException("Tarifa no encontrada aplicable para peso " + 
+                        request.getPesoKg() + " y volumen " + request.getVolumenM3());
+                }
+            } catch (org.springframework.web.client.HttpClientErrorException.NotFound e) {
+                throw new RuntimeException("Tarifa no encontrada aplicable para peso " + 
+                    request.getPesoKg() + " y volumen " + request.getVolumenM3());
+            } catch (Exception e) {
+                if (e instanceof RuntimeException && e.getMessage().contains("Tarifa no encontrada")) {
+                    throw e;
+                }
+                // Si hay otro error, continuar (no crítico para la estimación)
+                log.warn("Error al validar tarifa aplicable: {}", e.getMessage());
+            }
+        }
 
         DistanciaYDuracion distancia;
 

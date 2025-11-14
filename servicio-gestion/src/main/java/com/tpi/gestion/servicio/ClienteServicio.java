@@ -40,7 +40,7 @@ public class ClienteServicio {
                     c.setTelefono(datos.getTelefono());
                     return repositorio.save(c);
                 })
-                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Cliente no encontrado con ID: " + id));
     }
 
     public void eliminar(Long id) {

@@ -55,9 +55,11 @@ try {
     Write-Host ""
     Write-Host "📊 Información del Token:" -ForegroundColor Cyan
     Write-Host "   Token Type: $($response.token_type)" -ForegroundColor Gray
-    Write-Host "   Expira en: $($response.expires_in) segundos ($([Math]::Round($response.expires_in / 60, 1)) minutos)" -ForegroundColor Gray
+    $minutos = [Math]::Round($response.expires_in / 60, 1)
+    $refreshMinutos = [Math]::Round($response.refresh_expires_in / 60, 1)
+    Write-Host "   Expira en: $($response.expires_in) segundos ($minutos minutos)" -ForegroundColor Gray
     Write-Host "   Expira a las: $($expiresAt.ToString('HH:mm:ss'))" -ForegroundColor Gray
-    Write-Host "   Refresh expira en: $($response.refresh_expires_in) segundos ($([Math]::Round($response.refresh_expires_in / 60, 1)) minutos)" -ForegroundColor Gray
+    Write-Host "   Refresh expira en: $($response.refresh_expires_in) segundos ($refreshMinutos minutos)" -ForegroundColor Gray
     Write-Host "   Refresh expira a las: $($refreshExpiresAt.ToString('HH:mm:ss'))" -ForegroundColor Gray
     Write-Host ""
     

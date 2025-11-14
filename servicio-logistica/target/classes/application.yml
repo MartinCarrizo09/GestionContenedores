@@ -60,7 +60,7 @@ server:
 google:
   maps:
     api:
-      key: ${GOOGLE_MAPS_API_KEY:AIzaSyAUp0j1WFgacoQYTKhtPI-CF6Ld7a7jHSg}
+      key: ${GOOGLE_MAPS_API_KEY:AIzaSyDlQYVvd-umbnNaucd8P990P7cgkyGCDsU}
 
 # ========== Configuración de Microservicios ==========
 servicio:

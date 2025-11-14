@@ -39,7 +39,7 @@ public class TarifaServicio {
                     t.setValor(datos.getValor());
                     return repositorio.save(t);
                 })
-                .orElseThrow(() -> new RuntimeException("Tarifa no encontrada"));
+                .orElseThrow(() -> new RuntimeException("Tarifa no encontrada con ID: " + id));
     }
 
     public void eliminar(Long id) {
