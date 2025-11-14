@@ -13,6 +13,7 @@ import com.tpi.logistica.dto.ContenedorPendienteResponse;
 import com.tpi.logistica.dto.SolicitudCompletaRequest;
 import com.tpi.logistica.dto.SolicitudCompletaResponse;
 import com.tpi.logistica.dto.googlemaps.DistanciaYDuracion;
+import com.tpi.logistica.config.MicroserviciosConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -36,19 +37,22 @@ public class SolicitudServicio {
     private final CalculoTarifaServicio calculoTarifaServicio;
     private final GoogleMapsService googleMapsService;
     private final RestTemplate restTemplate;
+    private final MicroserviciosConfig microserviciosConfig;
 
     public SolicitudServicio(SolicitudRepositorio repositorio,
                             RutaRepositorio rutaRepositorio,
                             TramoRepositorio tramoRepositorio,
                             CalculoTarifaServicio calculoTarifaServicio,
                             GoogleMapsService googleMapsService,
-                            RestTemplate restTemplate) {
+                            RestTemplate restTemplate,
+                            MicroserviciosConfig microserviciosConfig) {
         this.repositorio = repositorio;
         this.rutaRepositorio = rutaRepositorio;
         this.tramoRepositorio = tramoRepositorio;
         this.calculoTarifaServicio = calculoTarifaServicio;
         this.googleMapsService = googleMapsService;
         this.restTemplate = restTemplate;
+        this.microserviciosConfig = microserviciosConfig;
     }
 
     public List<Solicitud> listar() {
@@ -93,7 +97,7 @@ public class SolicitudServicio {
     }
     
     private void validarOCrearCliente(Long idCliente) {
-        String urlGestion = "http://localhost:8080/clientes/" + idCliente;
+        String urlGestion = microserviciosConfig.getServicioGestionUrl() + "/clientes/" + idCliente;
         
         try {
 
@@ -112,7 +116,7 @@ public class SolicitudServicio {
             nuevoCliente.setCuil("20-" + String.format("%08d", idCliente) + "-0");
             
             try {
-                restTemplate.postForObject("http://localhost:8080/clientes", nuevoCliente, ClienteDTO.class);
+                restTemplate.postForObject(microserviciosConfig.getServicioGestionUrl() + "/clientes", nuevoCliente, ClienteDTO.class);
                 log.info("Cliente ID {} creado automáticamente", idCliente);
             } catch (Exception ex) {
                 log.error("Error al crear cliente automáticamente: {}", ex.getMessage());
@@ -121,12 +125,12 @@ public class SolicitudServicio {
             
         } catch (Exception e) {
             throw new RuntimeException("Error al validar cliente con servicio-gestion: " + e.getMessage() + 
-                ". Verifique que el servicio-gestion esté disponible en http://localhost:8080");
+                ". Verifique que el servicio-gestion esté disponible en " + microserviciosConfig.getServicioGestionUrl());
         }
     }
     
     private void validarContenedor(Long idContenedor) {
-        String urlGestion = "http://localhost:8080/contenedores/" + idContenedor;
+        String urlGestion = microserviciosConfig.getServicioGestionUrl() + "/contenedores/" + idContenedor;
         
         try {
             restTemplate.getForObject(urlGestion, ContenedorDTO.class);
@@ -138,7 +142,7 @@ public class SolicitudServicio {
                 
         } catch (Exception e) {
             throw new RuntimeException("Error al validar contenedor con servicio-gestion: " + e.getMessage() + 
-                ". Verifique que el servicio-gestion esté disponible en http://localhost:8080");
+                ". Verifique que el servicio-gestion esté disponible en " + microserviciosConfig.getServicioGestionUrl());
         }
     }
     
@@ -202,7 +206,7 @@ public class SolicitudServicio {
                     solicitud.setTiempoReal(datosActualizados.getTiempoReal());
                     return repositorio.save(solicitud);
                 })
-                .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
+                .orElseThrow(() -> new RuntimeException("Solicitud no encontrada con ID: " + id));
     }
 
     public void eliminar(Long id) {
@@ -315,7 +319,7 @@ public class SolicitudServicio {
      * @return ID del cliente creado
      */
     private Long crearCliente(String nombre, String apellido, String email, String telefono, String cuil) {
-        String urlGestion = "http://localhost:8080/api-gestion/clientes";
+        String urlGestion = microserviciosConfig.getServicioGestionUrl() + "/clientes";
         
         ClienteDTO nuevoCliente = new ClienteDTO();
         nuevoCliente.setNombre(nombre);
@@ -343,7 +347,7 @@ public class SolicitudServicio {
      * @return ID del contenedor creado
      */
     private Long crearContenedor(String codigoIdentificacion, Double peso, Double volumen, Long idCliente) {
-        String urlGestion = "http://localhost:8080/api-gestion/contenedores";
+        String urlGestion = microserviciosConfig.getServicioGestionUrl() + "/contenedores";
         
         ContenedorDTO nuevoContenedor = new ContenedorDTO();
         nuevoContenedor.setCodigoIdentificacion(codigoIdentificacion);
@@ -412,7 +416,7 @@ public class SolicitudServicio {
     @Transactional
     public Solicitud asignarRuta(Long idSolicitud, EstimacionRutaRequest datosRuta) {
         Solicitud solicitud = repositorio.findById(idSolicitud)
-                .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
+                .orElseThrow(() -> new RuntimeException("Solicitud no encontrada con ID: " + idSolicitud));
 
         if (!"BORRADOR".equals(solicitud.getEstado())) {
             throw new RuntimeException("Solo se pueden asignar rutas a solicitudes en estado BORRADOR");
@@ -564,7 +568,7 @@ public class SolicitudServicio {
 
     public SeguimientoSolicitudResponse obtenerSeguimiento(String numeroSeguimiento) {
         Solicitud solicitud = repositorio.findByNumeroSeguimiento(numeroSeguimiento)
-                .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
+                .orElseThrow(() -> new RuntimeException("Solicitud no encontrada con número de seguimiento: " + numeroSeguimiento));
 
 
         List<Ruta> rutas = rutaRepositorio.findByIdSolicitud(solicitud.getId());

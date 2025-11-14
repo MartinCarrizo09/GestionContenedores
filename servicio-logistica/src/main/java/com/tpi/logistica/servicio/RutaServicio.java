@@ -38,7 +38,7 @@ public class RutaServicio {
                     ruta.setIdSolicitud(datosActualizados.getIdSolicitud());
                     return repositorio.save(ruta);
                 })
-                .orElseThrow(() -> new RuntimeException("Ruta no encontrada"));
+                .orElseThrow(() -> new RuntimeException("Ruta no encontrada con ID: " + id));
     }
 
     public void eliminar(Long id) {

@@ -180,6 +180,16 @@ public class TramoServicio {
         Tramo tramo = repositorio.findById(idTramo)
                 .orElseThrow(() -> new RuntimeException("Tramo no encontrado"));
 
+        if (kmReales == null || kmReales <= 0) {
+            throw new IllegalArgumentException("Los kilómetros reales deben ser mayores a 0");
+        }
+        if (costoKmCamion == null || costoKmCamion <= 0) {
+            throw new IllegalArgumentException("El costo por km del camión debe ser mayor a 0");
+        }
+        if (consumoCamion == null || consumoCamion <= 0) {
+            throw new IllegalArgumentException("El consumo del camión debe ser mayor a 0");
+        }
+
         if (!"INICIADO".equals(tramo.getEstado())) {
             throw new RuntimeException("Solo se pueden finalizar tramos en estado INICIADO");
         }

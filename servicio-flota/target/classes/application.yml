@@ -81,3 +81,12 @@ springdoc:
     operationsSorter: alpha
     tagsSorter: alpha
   show-actuator: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always

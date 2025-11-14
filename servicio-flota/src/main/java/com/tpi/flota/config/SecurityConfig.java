@@ -42,6 +42,8 @@ public class SecurityConfig {
                     "/api-docs/**",
                     "/v3/api-docs/**"
                 ).permitAll()
+                // Actuator
+                .requestMatchers("/actuator/**").permitAll()
                 // Requerir autenticación para todo lo demás
                 .anyRequest().authenticated()
             )

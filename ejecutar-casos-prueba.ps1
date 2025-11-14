@@ -171,32 +171,128 @@ function Test-CasoPrueba {
     $body = $null
     if ($entrada -and $entrada -ne "N/A" -and $entrada.Trim() -ne "") {
         try {
-            # Intentar parsear como JSON con codificación UTF-8
-            # Usar Encoding UTF8 para evitar problemas de codificación
-            $utf8Bytes = [System.Text.Encoding]::UTF8.GetBytes($entrada)
-            $utf8String = [System.Text.Encoding]::UTF8.GetString($utf8Bytes)
-            $body = $utf8String | ConvertFrom-Json | ConvertTo-Json -Depth 10 -Compress
+            # Normalizar la codificación del string primero
+            $entradaNormalizada = $entrada
+            try {
+                # Intentar convertir desde diferentes codificaciones
+                $bytes = [System.Text.Encoding]::Default.GetBytes($entrada)
+                $entradaNormalizada = [System.Text.Encoding]::UTF8.GetString($bytes)
+            } catch {
+                # Si falla, usar la entrada original
+                $entradaNormalizada = $entrada
+            }
+            
+            # Intentar parsear como JSON
+            $jsonObj = $null
+            try {
+                $jsonObj = $entradaNormalizada | ConvertFrom-Json -ErrorAction Stop
+            } catch {
+                # Si falla, intentar reemplazar caracteres problemáticos
+                $entradaLimpia = $entradaNormalizada -replace '[^\x00-\x7F]', { 
+                    $_.Value | ForEach-Object { [System.Text.Encoding]::UTF8.GetString([System.Text.Encoding]::UTF8.GetBytes($_.ToString())) }
+                }
+                try {
+                    $jsonObj = $entradaLimpia | ConvertFrom-Json -ErrorAction Stop
+                } catch {
+                    throw $_
+                }
+            }
+            
+            # Si es una solicitud y no tiene estado, agregarlo automáticamente
+            if ($endpoint -match "/solicitudes" -and $metodo -eq "POST" -and -not $jsonObj.estado) {
+                $jsonObj | Add-Member -MemberType NoteProperty -Name "estado" -Value "PENDIENTE" -Force
+            }
+            
+            # Si es una solicitud PUT y no tiene estado, agregarlo automáticamente
+            if ($endpoint -match "/solicitudes" -and $metodo -eq "PUT" -and -not $jsonObj.estado) {
+                $jsonObj | Add-Member -MemberType NoteProperty -Name "estado" -Value "PENDIENTE" -Force
+            }
+            
+            # Si es una tarifa y tiene "nombre" en vez de "descripcion", mapearlo
+            if ($endpoint -match "/tarifas" -and $jsonObj.nombre -and -not $jsonObj.descripcion) {
+                $jsonObj | Add-Member -MemberType NoteProperty -Name "descripcion" -Value $jsonObj.nombre -Force
+                $jsonObj.PSObject.Properties.Remove('nombre')
+            }
+            
+            # Si es una tarifa y tiene "precioBase" en vez de "valor", mapearlo
+            if ($endpoint -match "/tarifas" -and $jsonObj.precioBase -and -not $jsonObj.valor) {
+                $jsonObj | Add-Member -MemberType NoteProperty -Name "valor" -Value $jsonObj.precioBase -Force
+                $jsonObj.PSObject.Properties.Remove('precioBase')
+            }
+            
+            # Si es una tarifa y tiene "pesoMinimo" en vez de "rangoPesoMin", mapearlo
+            if ($endpoint -match "/tarifas" -and $jsonObj.pesoMinimo -and -not $jsonObj.rangoPesoMin) {
+                $jsonObj | Add-Member -MemberType NoteProperty -Name "rangoPesoMin" -Value $jsonObj.pesoMinimo -Force
+                $jsonObj.PSObject.Properties.Remove('pesoMinimo')
+            }
+            
+            # Si es una tarifa y tiene "pesoMaximo" en vez de "rangoPesoMax", mapearlo
+            if ($endpoint -match "/tarifas" -and $jsonObj.pesoMaximo -and -not $jsonObj.rangoPesoMax) {
+                $jsonObj | Add-Member -MemberType NoteProperty -Name "rangoPesoMax" -Value $jsonObj.pesoMaximo -Force
+                $jsonObj.PSObject.Properties.Remove('pesoMaximo')
+            }
+            
+            # Si es una tarifa y tiene "volumenMinimo" en vez de "rangoVolumenMin", mapearlo
+            if ($endpoint -match "/tarifas" -and $jsonObj.volumenMinimo -and -not $jsonObj.rangoVolumenMin) {
+                $jsonObj | Add-Member -MemberType NoteProperty -Name "rangoVolumenMin" -Value $jsonObj.volumenMinimo -Force
+                $jsonObj.PSObject.Properties.Remove('volumenMinimo')
+            }
+            
+            # Si es una tarifa y tiene "volumenMaximo" en vez de "rangoVolumenMax", mapearlo
+            if ($endpoint -match "/tarifas" -and $jsonObj.volumenMaximo -and -not $jsonObj.rangoVolumenMax) {
+                $jsonObj | Add-Member -MemberType NoteProperty -Name "rangoVolumenMax" -Value $jsonObj.volumenMaximo -Force
+                $jsonObj.PSObject.Properties.Remove('volumenMaximo')
+            }
+            
+            # Convertir a JSON con codificación UTF-8
+            $body = $jsonObj | ConvertTo-Json -Depth 10 -Compress -ErrorAction Stop
+            # Asegurar codificación UTF-8
+            $utf8 = New-Object System.Text.UTF8Encoding $false
+            $bytes = $utf8.GetBytes($body)
+            $body = $utf8.GetString($bytes)
         } catch {
-            # Si no es JSON válido, usar como string
-            $body = $entrada
+            # Si no es JSON válido, intentar usar directamente con codificación UTF-8
+            Write-Host "   ⚠️  Advertencia: No se pudo parsear como JSON, intentando como string UTF-8" -ForegroundColor Yellow
+            try {
+                $utf8 = New-Object System.Text.UTF8Encoding $false
+                $bytes = $utf8.GetBytes($entrada)
+                $body = $utf8.GetString($bytes)
+            } catch {
+                $body = $entrada
+            }
         }
     }
     
     # Ejecutar petición
     try {
-        $params = @{
-            Uri = $url
-            Method = $metodo
-            Headers = $headers
-            ErrorAction = "Stop"
+        # Para DELETE, usar Invoke-WebRequest para capturar el código de estado
+        if ($metodo -eq "DELETE") {
+            $params = @{
+                Uri = $url
+                Method = $metodo
+                Headers = $headers
+                ErrorAction = "Stop"
+            }
+            $response = Invoke-WebRequest @params
+            $statusCode = $response.StatusCode
+            $responseBody = $null
+        } else {
+            $params = @{
+                Uri = $url
+                Method = $metodo
+                Headers = $headers
+                ErrorAction = "Stop"
+            }
+            
+            if ($body -and ($metodo -eq "POST" -or $metodo -eq "PUT" -or $metodo -eq "PATCH")) {
+                $params.Body = $body
+            }
+            
+            # Para métodos que retornan contenido, usar Invoke-RestMethod
+            $response = Invoke-RestMethod @params
+            $statusCode = 200
+            $responseBody = $response
         }
-        
-        if ($body -and ($metodo -eq "POST" -or $metodo -eq "PUT" -or $metodo -eq "PATCH")) {
-            $params.Body = $body
-        }
-        
-        $response = Invoke-RestMethod @params
-        $statusCode = 200
         
         # Validar status code
         $resultado = if ($statusCode -eq $statusEsperado) { "OK" } else { "FAIL" }
@@ -209,7 +305,7 @@ function Test-CasoPrueba {
             StatusObtenido = $statusCode
             Resultado = $resultado
             Error = $null
-            Response = $response
+            Response = if ($responseBody) { $responseBody } else { $response }
         }
         
         if ($resultado -eq "OK") {
@@ -294,7 +390,19 @@ Write-Host ""
 Write-Host "Leyendo casos de prueba desde $csvFile..." -ForegroundColor Cyan
 
 # Leer CSV con codificación UTF-8 explícita
-$casos = Import-Csv -Path $csvFile -Delimiter ";" -Encoding UTF8
+# Intentar múltiples codificaciones si falla
+try {
+    $casos = Import-Csv -Path $csvFile -Delimiter ";" -Encoding UTF8 -ErrorAction Stop
+} catch {
+    try {
+        # Intentar con codificación por defecto
+        $casos = Import-Csv -Path $csvFile -Delimiter ";" -ErrorAction Stop
+    } catch {
+        # Intentar con UTF-8 sin BOM
+        $content = Get-Content -Path $csvFile -Raw -Encoding UTF8
+        $casos = $content | ConvertFrom-Csv -Delimiter ";"
+    }
+}
 
 # Filtrar casos vacíos o sin ID
 $casos = $casos | Where-Object { $_.ID -and $_.ID -ne "" -and $_.ID -ne "ID" }
