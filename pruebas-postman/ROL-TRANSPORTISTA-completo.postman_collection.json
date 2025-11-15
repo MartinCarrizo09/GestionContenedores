@@ -124,9 +124,9 @@
 		{
 			"name": "⚙️ LOGÍSTICA - Configuración",
 			"item": [
-				{"name": "GET - Listar Todas", "request": {"method": "GET", "header": [], "url": "http://localhost:8080/api/logistica/configuracion"}},
-				{"name": "GET - Por ID", "request": {"method": "GET", "header": [], "url": "http://localhost:8080/api/logistica/configuracion/1"}},
-				{"name": "GET - Por Clave", "request": {"method": "GET", "header": [], "url": "http://localhost:8080/api/logistica/configuracion/clave/velocidad_promedio_camion"}}
+			{"name": "GET - Listar Todas", "request": {"method": "GET", "header": [], "url": "http://localhost:8080/api/logistica/configuraciones"}},
+			{"name": "GET - Por ID", "request": {"method": "GET", "header": [], "url": "http://localhost:8080/api/logistica/configuraciones/1"}},
+			{"name": "GET - Por Clave", "request": {"method": "GET", "header": [], "url": "http://localhost:8080/api/logistica/configuraciones/clave/velocidad_promedio_camion"}}
 			]
 		},
 		{

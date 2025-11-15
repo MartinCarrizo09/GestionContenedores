@@ -686,7 +686,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"numeroSeguimiento\": \"SEG-2024-003\",\n    \"origenDireccion\": \"Origen A\",\n    \"origenLatitud\": -31.42,\n    \"origenLongitud\": -64.19,\n    \"destinoDireccion\": \"Destino B\",\n    \"destinoLatitud\": -31.40,\n    \"destinoLongitud\": -64.15,\n    \"clienteNombre\": \"Roberto\",\n    \"clienteApellido\": \"Sánchez\",\n    \"clienteEmail\": \"roberto@test.com\",\n    \"clienteTelefono\": \"3518765432\",\n    \"clienteCuil\": \"20678901234\",\n    \"contenedorCodigo\": \"CONT-003\",\n    \"contenedorPeso\": 1800.0,\n    \"contenedorVolumen\": 3.2\n}",
+							"raw": "{\n    \"numeroSeguimiento\": \"SEG-2024-003\",\n    \"origenDireccion\": \"Origen A\",\n    \"origenLatitud\": -31.42,\n    \"origenLongitud\": -64.19,\n    \"destinoDireccion\": \"Destino B\",\n    \"destinoLatitud\": -31.40,\n    \"destinoLongitud\": -64.15,\n    \"clienteNombre\": \"Roberto\",\n    \"clienteApellido\": \"Sánchez\",\n    \"clienteEmail\": \"roberto@test.com\",\n    \"clienteTelefono\": \"3518765432\",\n    \"clienteCuil\": \"20678901234\",\n    \"codigoIdentificacion\": \"CONT-003\",\n    \"peso\": 1800.0,\n    \"volumen\": 3.2\n}",
 							"options": {
 								"raw": {
 									"language": "json"
