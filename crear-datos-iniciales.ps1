@@ -13,14 +13,18 @@ Write-Host ""
 # Obtener token de operador
 Write-Host "Obteniendo token de operador..." -ForegroundColor Yellow
 try {
+    $keycloakUrl = "http://localhost:9090/realms/tpi-backend/protocol/openid-connect/token"
+    
     $body = @{
+        grant_type = "password"
+        client_id = "tpi-client"
         username = "operador@tpi.com"
         password = "operador123"
-    } | ConvertTo-Json
+    }
     
-    $tokenResponse = Invoke-RestMethod -Uri "$GATEWAY_URL/auth/login" `
+    $tokenResponse = Invoke-RestMethod -Uri $keycloakUrl `
         -Method Post `
-        -ContentType "application/json" `
+        -ContentType "application/x-www-form-urlencoded" `
         -Body $body `
         -ErrorAction Stop
     
@@ -30,6 +34,7 @@ try {
         Write-Host "Error: No se pudo obtener el token" -ForegroundColor Red
         exit 1
     }
+    Write-Host "Token obtenido correctamente" -ForegroundColor Green
 } catch {
     Write-Host "Error al obtener token: $($_.Exception.Message)" -ForegroundColor Red
     exit 1

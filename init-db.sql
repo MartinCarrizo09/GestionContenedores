@@ -188,6 +188,8 @@ CREATE INDEX IF NOT EXISTS idx_config_clave ON logistica.configuracion(clave);
 -- ==================== SCHEMA GESTION ====================
 
 -- Clientes (50 registros para pruebas exhaustivas)
+-- IMPORTANTE: Resetear la secuencia para que comience desde 1
+ALTER SEQUENCE gestion.clientes_id_seq RESTART WITH 1;
 INSERT INTO gestion.clientes (nombre, apellido, email, telefono, cuil) VALUES
 ('Juan Carlos', 'Rodríguez', 'jrodriguez@logisticadelsur.com', '+54 351 400-1000', '20-12345678-9'),
 ('María Elena', 'Martínez', 'mmartinez@transportesunidos.com', '+54 351 400-2000', '27-23456789-0'),
@@ -212,6 +214,7 @@ INSERT INTO gestion.clientes (nombre, apellido, email, telefono, cuil) VALUES
 ON CONFLICT (email) DO NOTHING;
 
 -- Depósitos (10 registros estratégicos)
+ALTER SEQUENCE gestion.depositos_id_seq RESTART WITH 1;
 INSERT INTO gestion.depositos (nombre, direccion, latitud, longitud, costo_estadia_xdia) VALUES
 ('Depósito Central Córdoba', 'Av. Circunvalación Km 5, Córdoba', -31.4201, -64.1888, 150.00),
 ('Depósito Zona Norte', 'Ruta 9 Km 680, Córdoba', -31.3500, -64.1500, 120.00),
@@ -226,6 +229,7 @@ INSERT INTO gestion.depositos (nombre, direccion, latitud, longitud, costo_estad
 ON CONFLICT DO NOTHING;
 
 -- Contenedores (200 registros distribuidos entre clientes)
+ALTER SEQUENCE gestion.contenedores_id_seq RESTART WITH 1;
 DO $$
 DECLARE
     i INT;
@@ -272,6 +276,7 @@ BEGIN
 END $$;
 
 -- Tarifas (15 registros con rangos variados)
+ALTER SEQUENCE gestion.tarifas_id_seq RESTART WITH 1;
 INSERT INTO gestion.tarifas (descripcion, rango_peso_min, rango_peso_max, rango_volumen_min, rango_volumen_max, valor) VALUES
 ('Tarifa Contenedor Pequeño - Corta Distancia', 0, 3000, 0, 35, 3000.00),
 ('Tarifa Contenedor Pequeño - Media Distancia', 0, 3000, 0, 35, 4500.00),
@@ -351,6 +356,7 @@ INSERT INTO logistica.configuracion (clave, valor) VALUES
 ON CONFLICT (clave) DO NOTHING;
 
 -- Solicitudes de prueba (10 registros en diferentes estados)
+ALTER SEQUENCE logistica.solicitudes_id_seq RESTART WITH 1;
 INSERT INTO logistica.solicitudes (numero_seguimiento, id_contenedor, id_cliente, origen_direccion, origen_latitud, origen_longitud, destino_direccion, destino_latitud, destino_longitud, estado, costo_estimado, tiempo_estimado, costo_final, tiempo_real) VALUES
 -- Estado BORRADOR (pendientes de estimar - SIN costos ni tiempos)
 ('TRACK-2025-001', 1, 1, 'Puerto de Buenos Aires, Buenos Aires, Argentina', -34.6037, -58.3816, 'Rosario, Santa Fe, Argentina', -32.9468, -60.6393, 'BORRADOR', NULL, NULL, NULL, NULL),

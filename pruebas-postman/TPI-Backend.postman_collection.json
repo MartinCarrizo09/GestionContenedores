@@ -1,0 +1,961 @@
+{
+	"info": {
+		"_postman_id": "tpi-backend-collection",
+		"name": "TPI Backend - Gestión de Contenedores",
+		"description": "Colección de requests para el sistema de gestión de contenedores TPI. Incluye ejemplos para presentar en clase con Postman.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{authToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"item": [
+		{
+			"name": "1. Autenticación",
+			"item": [
+				{
+					"name": "Obtener Token - Cliente",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    var token = jsonData.access_token;",
+									"    if (token) {",
+									"        pm.environment.set('authToken', token);",
+									"        pm.collectionVariables.set('authToken', token);",
+									"        console.log('✅ Token CLIENTE guardado correctamente');",
+									"        console.log('   Token: ' + token.substring(0, 30) + '...');",
+									"    } else {",
+									"        console.log('❌ Error: No se recibió access_token en la respuesta');",
+									"    }",
+									"} else {",
+									"    console.log('❌ Error al obtener token. Status: ' + pm.response.code);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "tpi-client",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "7SBPFfvdXDn0y6gYa4L0qX4wz7FIoXaS",
+									"type": "text"
+								},
+								{
+									"key": "username",
+									"value": "cliente@tpi.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "cliente123",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:9090/realms/tpi-backend/protocol/openid-connect/token",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9090",
+							"path": [
+								"realms",
+								"tpi-backend",
+								"protocol",
+								"openid-connect",
+								"token"
+							]
+						},
+						"description": "Obtiene un token JWT para el rol CLIENTE. El token se guarda automáticamente en la variable `authToken`."
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Token - Operador",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    var token = jsonData.access_token;",
+									"    if (token) {",
+									"        pm.environment.set('authToken', token);",
+									"        pm.collectionVariables.set('authToken', token);",
+									"        console.log('✅ Token OPERADOR guardado correctamente');",
+									"        console.log('   Token: ' + token.substring(0, 30) + '...');",
+									"    } else {",
+									"        console.log('❌ Error: No se recibió access_token en la respuesta');",
+									"    }",
+									"} else {",
+									"    console.log('❌ Error al obtener token. Status: ' + pm.response.code);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "tpi-client",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "7SBPFfvdXDn0y6gYa4L0qX4wz7FIoXaS",
+									"type": "text"
+								},
+								{
+									"key": "username",
+									"value": "operador@tpi.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "operador123",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:9090/realms/tpi-backend/protocol/openid-connect/token",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9090",
+							"path": [
+								"realms",
+								"tpi-backend",
+								"protocol",
+								"openid-connect",
+								"token"
+							]
+						},
+						"description": "Obtiene un token JWT para el rol OPERADOR. El token se guarda automáticamente en la variable `authToken`."
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Token - Transportista",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    var token = jsonData.access_token;",
+									"    if (token) {",
+									"        pm.environment.set('authToken', token);",
+									"        pm.collectionVariables.set('authToken', token);",
+									"        console.log('✅ Token TRANSPORTISTA guardado correctamente');",
+									"        console.log('   Token: ' + token.substring(0, 30) + '...');",
+									"    } else {",
+									"        console.log('❌ Error: No se recibió access_token en la respuesta');",
+									"    }",
+									"} else {",
+									"    console.log('❌ Error al obtener token. Status: ' + pm.response.code);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "tpi-client",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "7SBPFfvdXDn0y6gYa4L0qX4wz7FIoXaS",
+									"type": "text"
+								},
+								{
+									"key": "username",
+									"value": "transportista@tpi.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "transportista123",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:9090/realms/tpi-backend/protocol/openid-connect/token",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9090",
+							"path": [
+								"realms",
+								"tpi-backend",
+								"protocol",
+								"openid-connect",
+								"token"
+							]
+						},
+						"description": "Obtiene un token JWT para el rol TRANSPORTISTA. El token se guarda automáticamente en la variable `authToken`."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Gestión de Clientes",
+			"item": [
+				{
+					"name": "Listar Clientes",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/gestion/clientes",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"gestion",
+								"clientes"
+							]
+						},
+						"description": "Obtiene la lista de todos los clientes registrados en el sistema."
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Cliente por ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/gestion/clientes/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"gestion",
+								"clientes",
+								"1"
+							]
+						},
+						"description": "Obtiene los detalles de un cliente específico por su ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Cliente",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nombre\": \"María\",\n    \"apellido\": \"González\",\n    \"email\": \"maria.gonzalez@test.com\",\n    \"telefono\": \"3517890123\",\n    \"cuil\": \"27345678901\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/gestion/clientes",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"gestion",
+								"clientes"
+							]
+						},
+						"description": "Crea un nuevo cliente en el sistema. Requiere rol OPERADOR."
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar Cliente",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nombre\": \"Juan Carlos\",\n    \"apellido\": \"Pérez\",\n    \"email\": \"juancarlos@mail.com\",\n    \"telefono\": \"3516789999\",\n    \"cuil\": \"20123456789\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/gestion/clientes/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"gestion",
+								"clientes",
+								"1"
+							]
+						},
+						"description": "Actualiza los datos de un cliente existente. Requiere rol OPERADOR."
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar Cliente",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/gestion/clientes/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"gestion",
+								"clientes",
+								"1"
+							]
+						},
+						"description": "Elimina un cliente del sistema. Requiere rol OPERADOR."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Gestión de Contenedores",
+			"item": [
+				{
+					"name": "Listar Contenedores",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/gestion/contenedores",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"gestion",
+								"contenedores"
+							]
+						},
+						"description": "Obtiene la lista de todos los contenedores registrados."
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Contenedor por Código",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/gestion/contenedores/codigo/CONT-001",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"gestion",
+								"contenedores",
+								"codigo",
+								"CONT-001"
+							]
+						},
+						"description": "Busca un contenedor por su código de identificación único."
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Contenedor",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"codigoIdentificacion\": \"CONT-002\",\n    \"peso\": 2000.0,\n    \"volumen\": 3.0,\n    \"cliente\": {\n        \"id\": 1\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/gestion/contenedores",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"gestion",
+								"contenedores"
+							]
+						},
+						"description": "Crea un nuevo contenedor asociado a un cliente. Requiere rol OPERADOR."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4. Gestión de Solicitudes",
+			"item": [
+				{
+					"name": "Listar Solicitudes",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/logistica/solicitudes",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"logistica",
+								"solicitudes"
+							]
+						},
+						"description": "Obtiene la lista de todas las solicitudes de transporte."
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Solicitud Básica",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"numeroSeguimiento\": \"SEG-2024-002\",\n    \"origenDireccion\": \"Av. Colón 100\",\n    \"origenLatitud\": -31.4200,\n    \"origenLongitud\": -64.1888,\n    \"destinoDireccion\": \"Bv. San Juan 500\",\n    \"destinoLatitud\": -31.4100,\n    \"destinoLongitud\": -64.1700,\n    \"idCliente\": 1,\n    \"idContenedor\": 1,\n    \"estado\": \"PENDIENTE\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/logistica/solicitudes",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"logistica",
+								"solicitudes"
+							]
+						},
+						"description": "Crea una nueva solicitud de transporte con cliente y contenedor existentes. Requiere rol OPERADOR."
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Solicitud Completa (con Cliente y Contenedor)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"numeroSeguimiento\": \"SEG-2024-003\",\n    \"origenDireccion\": \"Origen A\",\n    \"origenLatitud\": -31.42,\n    \"origenLongitud\": -64.19,\n    \"destinoDireccion\": \"Destino B\",\n    \"destinoLatitud\": -31.40,\n    \"destinoLongitud\": -64.15,\n    \"clienteNombre\": \"Roberto\",\n    \"clienteApellido\": \"Sánchez\",\n    \"clienteEmail\": \"roberto@test.com\",\n    \"clienteTelefono\": \"3518765432\",\n    \"clienteCuil\": \"20678901234\",\n    \"contenedorCodigo\": \"CONT-003\",\n    \"contenedorPeso\": 1800.0,\n    \"contenedorVolumen\": 3.2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/logistica/solicitudes/completa",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"logistica",
+								"solicitudes",
+								"completa"
+							]
+						},
+						"description": "Crea una solicitud completa creando automáticamente el cliente y el contenedor si no existen. Requiere rol OPERADOR."
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Solicitud por Número de Seguimiento",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/logistica/solicitudes/seguimiento/SEG-2024-001",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"logistica",
+								"solicitudes",
+								"seguimiento",
+								"SEG-2024-001"
+							]
+						},
+						"description": "Obtiene una solicitud por su número de seguimiento único."
+					},
+					"response": []
+				},
+				{
+					"name": "Estimar Ruta",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"origen\": \"Córdoba, Argentina\",\n    \"destino\": \"Buenos Aires, Argentina\",\n    \"pesoKg\": 1500.0,\n    \"volumenM3\": 2.5\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/logistica/solicitudes/estimar-ruta",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"logistica",
+								"solicitudes",
+								"estimar-ruta"
+							]
+						},
+						"description": "Estima la distancia, tiempo y costo de una ruta entre origen y destino. Utiliza Google Maps API."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "5. Gestión de Tarifas",
+			"item": [
+				{
+					"name": "Listar Tarifas",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/gestion/tarifas",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"gestion",
+								"tarifas"
+							]
+						},
+						"description": "Obtiene la lista de todas las tarifas disponibles."
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Tarifa Aplicable",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/gestion/tarifas/aplicable?peso=1500&volumen=2.5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"gestion",
+								"tarifas",
+								"aplicable"
+							],
+							"query": [
+								{
+									"key": "peso",
+									"value": "1500"
+								},
+								{
+									"key": "volumen",
+									"value": "2.5"
+								}
+							]
+						},
+						"description": "Obtiene la tarifa aplicable para un peso y volumen específicos."
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Tarifa",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"descripcion\": \"Tarifa Estándar\",\n    \"rangoPesoMin\": 0.0,\n    \"rangoPesoMax\": 5000.0,\n    \"rangoVolumenMin\": 0.0,\n    \"rangoVolumenMax\": 10.0,\n    \"valor\": 5000.0\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/gestion/tarifas",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"gestion",
+								"tarifas"
+							]
+						},
+						"description": "Crea una nueva tarifa. Requiere rol OPERADOR."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "authToken",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Verificar que existe un token antes de cada request (excepto autenticación)",
+					"var urlPath = pm.request.url.getPath();",
+					"if (urlPath.indexOf('/token') === -1 && urlPath.indexOf('/auth') === -1) {",
+					"    var token = pm.collectionVariables.get('authToken');",
+					"    if (!token || token === '') {",
+					"        console.log('⚠️ No hay token guardado. Ejecuta primero \"Obtener Token - Operador\"');",
+					"    } else {",
+					"        console.log('✅ Token encontrado: ' + token.substring(0, 20) + '...');",
+					"    }",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
+

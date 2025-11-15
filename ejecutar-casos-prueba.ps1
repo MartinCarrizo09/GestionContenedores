@@ -21,15 +21,19 @@ function Get-AuthToken {
     }
     
     try {
-        $loginBody = @{
+        $keycloakUrl = "http://localhost:9090/realms/tpi-backend/protocol/openid-connect/token"
+        
+        $body = @{
+            grant_type = "password"
+            client_id = "tpi-client"
             username = $Username
             password = $Password
-        } | ConvertTo-Json
+        }
         
-        $response = Invoke-RestMethod -Uri "$baseUrl/auth/login" `
+        $response = Invoke-RestMethod -Uri $keycloakUrl `
             -Method POST `
-            -ContentType "application/json" `
-            -Body $loginBody `
+            -ContentType "application/x-www-form-urlencoded" `
+            -Body $body `
             -ErrorAction Stop
         
         $token = $response.access_token

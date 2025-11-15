@@ -154,36 +154,57 @@ foreach ($usuario in $usuarios) {
             -ErrorAction Stop
         
         Write-Host "   Usuario '$($usuario.username)' creado" -ForegroundColor Green
+    } catch {
+        Write-Host "   Usuario '$($usuario.username)' ya existe" -ForegroundColor Yellow
+    }
+    
+    # Obtener ID del usuario (ya sea recién creado o existente)
+    $users = Invoke-RestMethod -Uri "$KEYCLOAK_URL/admin/realms/$REALM/users?username=$($usuario.username)" `
+        -Headers @{Authorization = "Bearer $ADMIN_TOKEN"}
+    
+    if ($users.Count -gt 0) {
+        $userId = $users[0].id
         
-        # Obtener ID del usuario recién creado
-        $users = Invoke-RestMethod -Uri "$KEYCLOAK_URL/admin/realms/$REALM/users?username=$($usuario.username)" `
+        # Obtener el rol a asignar
+        $roleMapping = Invoke-RestMethod -Uri "$KEYCLOAK_URL/admin/realms/$REALM/roles/$($usuario.rol)" `
             -Headers @{Authorization = "Bearer $ADMIN_TOKEN"}
         
-        if ($users.Count -gt 0) {
-            $userId = $users[0].id
-            
-            # Asignar rol al usuario
-            $roleMapping = Invoke-RestMethod -Uri "$KEYCLOAK_URL/admin/realms/$REALM/roles?search=$($usuario.rol)" `
+        if ($roleMapping) {
+            # Verificar si el usuario ya tiene el rol
+            $existingRoles = Invoke-RestMethod -Uri "$KEYCLOAK_URL/admin/realms/$REALM/users/$userId/role-mappings/realm" `
                 -Headers @{Authorization = "Bearer $ADMIN_TOKEN"}
             
-            if ($roleMapping.Count -gt 0) {
+            $hasRole = $false
+            foreach ($existingRole in $existingRoles) {
+                if ($existingRole.name -eq $usuario.rol) {
+                    $hasRole = $true
+                    break
+                }
+            }
+            
+            if (-not $hasRole) {
+                # Asignar rol al usuario
                 $rolesToAssign = @(@{
-                    id = $roleMapping[0].id
-                    name = $roleMapping[0].name
+                    id = $roleMapping.id
+                    name = $roleMapping.name
                 }) | ConvertTo-Json -AsArray
                 
-                Invoke-RestMethod -Uri "$KEYCLOAK_URL/admin/realms/$REALM/users/$userId/role-mappings/realm" `
-                    -Method Post `
-                    -ContentType "application/json" `
-                    -Headers @{Authorization = "Bearer $ADMIN_TOKEN"} `
-                    -Body $rolesToAssign `
-                    -ErrorAction SilentlyContinue
-                
-                Write-Host "      Rol '$($usuario.rol)' asignado" -ForegroundColor Green
+                try {
+                    Invoke-RestMethod -Uri "$KEYCLOAK_URL/admin/realms/$REALM/users/$userId/role-mappings/realm" `
+                        -Method Post `
+                        -ContentType "application/json" `
+                        -Headers @{Authorization = "Bearer $ADMIN_TOKEN"} `
+                        -Body $rolesToAssign `
+                        -ErrorAction Stop
+                    
+                    Write-Host "      Rol '$($usuario.rol)' asignado" -ForegroundColor Green
+                } catch {
+                    Write-Host "      Error al asignar rol '$($usuario.rol)'" -ForegroundColor Red
+                }
+            } else {
+                Write-Host "      Rol '$($usuario.rol)' ya estaba asignado" -ForegroundColor Cyan
             }
         }
-    } catch {
-        Write-Host "   Usuario ya existe: $($usuario.username)" -ForegroundColor Yellow
     }
 }
 
