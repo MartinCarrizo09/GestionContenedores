@@ -1,4 +1,4 @@
-package com.tpi.gateway.config;
+package com.tpi.gestion.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -17,11 +17,9 @@ public class JwtDecoderConfig {
     @Bean
     @Primary
     public JwtDecoder jwtDecoder(@Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}") String jwkSetUri) {
-        // Crear decoder que SOLO valida la firma con las claves públicas de Keycloak
         NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
         
-        // Deshabilitar TODAS las validaciones por defecto (incluyendo issuer, exp, nbf)
-        // Solo queremos validar la firma
+        // Deshabilitar validación de issuer - solo validar firma
         jwtDecoder.setJwtValidator(jwt -> 
             org.springframework.security.oauth2.core.OAuth2TokenValidatorResult.success()
         );

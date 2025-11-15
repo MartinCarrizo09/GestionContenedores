@@ -34,26 +34,25 @@ public class SecurityConfig {
                 .pathMatchers("/v3/api-docs/**").permitAll()
                 .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 
-                // Endpoints específicos por rol - CLIENTE
-                .pathMatchers(HttpMethod.GET, "/api/gestion/contenedores/*/estado").hasAnyRole("CLIENTE", "OPERADOR")
-                .pathMatchers(HttpMethod.GET, "/api/gestion/contenedores/codigo/*/estado").hasAnyRole("CLIENTE", "OPERADOR")
-                .pathMatchers(HttpMethod.GET, "/api/logistica/solicitudes/cliente/*").hasAnyRole("CLIENTE", "OPERADOR")
-                .pathMatchers(HttpMethod.GET, "/api/logistica/solicitudes/seguimiento/**").hasAnyRole("CLIENTE", "OPERADOR")
-                .pathMatchers(HttpMethod.GET, "/api/logistica/solicitudes/seguimiento-detallado/**").hasAnyRole("CLIENTE", "OPERADOR")
+                // Endpoints específicos por rol - TRANSPORTISTA
+                .pathMatchers(HttpMethod.PATCH, "/api/flota/camiones/*/disponibilidad").hasAnyRole("TRANSPORTISTA", "OPERADOR")
+                .pathMatchers(HttpMethod.PATCH, "/api/logistica/tramos/*/iniciar").hasAnyRole("TRANSPORTISTA", "OPERADOR")
+                .pathMatchers(HttpMethod.PATCH, "/api/logistica/tramos/*/finalizar").hasAnyRole("TRANSPORTISTA", "OPERADOR")
+                .pathMatchers(HttpMethod.GET, "/api/logistica/tramos/camion/*").hasAnyRole("TRANSPORTISTA", "OPERADOR")
                 
-                // Endpoints específicos por rol - OPERADOR (escritura)
-                .pathMatchers(HttpMethod.POST, "/api/gestion/**").hasRole("OPERADOR")
-                .pathMatchers(HttpMethod.PUT, "/api/gestion/**").hasRole("OPERADOR")
+                // Endpoints específicos por rol - OPERADOR (escritura) - deben ir antes de las reglas generales
+                .pathMatchers(HttpMethod.POST, "/api/gestion/**").hasAnyRole("OPERADOR", "TRANSPORTISTA", "CLIENTE")
+                .pathMatchers(HttpMethod.PUT, "/api/gestion/**").hasAnyRole("OPERADOR", "TRANSPORTISTA", "CLIENTE")
                 .pathMatchers(HttpMethod.DELETE, "/api/gestion/**").hasRole("OPERADOR")
-                .pathMatchers(HttpMethod.POST, "/api/flota/**").hasRole("OPERADOR")
-                .pathMatchers(HttpMethod.PUT, "/api/flota/**").hasRole("OPERADOR")
+                .pathMatchers(HttpMethod.POST, "/api/flota/**").hasAnyRole("OPERADOR", "TRANSPORTISTA")
+                .pathMatchers(HttpMethod.PUT, "/api/flota/**").hasAnyRole("OPERADOR", "TRANSPORTISTA")
                 .pathMatchers(HttpMethod.DELETE, "/api/flota/**").hasRole("OPERADOR")
-                .pathMatchers(HttpMethod.POST, "/api/logistica/solicitudes/estimar-ruta").hasRole("OPERADOR")
+                .pathMatchers(HttpMethod.POST, "/api/logistica/solicitudes/estimar-ruta").hasAnyRole("OPERADOR", "CLIENTE")
                 .pathMatchers(HttpMethod.POST, "/api/logistica/solicitudes/*/asignar-ruta").hasRole("OPERADOR")
                 .pathMatchers(HttpMethod.GET, "/api/logistica/solicitudes/pendientes").hasRole("OPERADOR")
-                .pathMatchers(HttpMethod.POST, "/api/logistica/solicitudes").hasRole("OPERADOR")
-                .pathMatchers(HttpMethod.POST, "/api/logistica/solicitudes/completa").hasRole("OPERADOR")
-                .pathMatchers(HttpMethod.PUT, "/api/logistica/solicitudes/**").hasRole("OPERADOR")
+                .pathMatchers(HttpMethod.POST, "/api/logistica/solicitudes").hasAnyRole("OPERADOR", "CLIENTE")
+                .pathMatchers(HttpMethod.POST, "/api/logistica/solicitudes/completa").hasAnyRole("OPERADOR", "CLIENTE")
+                .pathMatchers(HttpMethod.PUT, "/api/logistica/solicitudes/**").hasAnyRole("OPERADOR", "CLIENTE")
                 .pathMatchers(HttpMethod.DELETE, "/api/logistica/solicitudes/**").hasRole("OPERADOR")
                 .pathMatchers(HttpMethod.POST, "/api/logistica/tramos").hasRole("OPERADOR")
                 .pathMatchers(HttpMethod.PUT, "/api/logistica/tramos/**").hasRole("OPERADOR")
@@ -61,12 +60,6 @@ public class SecurityConfig {
                 .pathMatchers(HttpMethod.POST, "/api/logistica/rutas").hasRole("OPERADOR")
                 .pathMatchers(HttpMethod.PUT, "/api/logistica/rutas/**").hasRole("OPERADOR")
                 .pathMatchers(HttpMethod.DELETE, "/api/logistica/rutas/**").hasRole("OPERADOR")
-                
-                // Endpoints específicos por rol - TRANSPORTISTA
-                .pathMatchers(HttpMethod.PATCH, "/api/flota/camiones/*/disponibilidad").hasAnyRole("TRANSPORTISTA", "OPERADOR")
-                .pathMatchers(HttpMethod.PATCH, "/api/logistica/tramos/*/iniciar").hasRole("TRANSPORTISTA")
-                .pathMatchers(HttpMethod.PATCH, "/api/logistica/tramos/*/finalizar").hasRole("TRANSPORTISTA")
-                .pathMatchers(HttpMethod.GET, "/api/logistica/tramos/camion/*").hasRole("TRANSPORTISTA")
                 
                 // GET endpoints - cualquier rol autenticado puede leer
                 .pathMatchers(HttpMethod.GET, "/api/**").authenticated()

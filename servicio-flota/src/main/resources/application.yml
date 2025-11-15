@@ -7,6 +7,8 @@
 spring:
   application:
     name: servicio-flota
+  main:
+    allow-bean-definition-overriding: true
 
   # ========== Configuración de Base de Datos PostgreSQL Local ==========
   datasource:

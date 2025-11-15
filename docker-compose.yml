@@ -100,13 +100,7 @@ services:
       SERVICIO_FLOTA_URL: http://servicio-flota:8082
       SERVICIO_LOGISTICA_URL: http://servicio-logistica:8083
       KEYCLOAK_URL: http://keycloak:9090
-      # IMPORTANTE: El issuer-uri debe coincidir EXACTAMENTE con el 'iss' claim del token
-      # Si el token se obtuvo desde el host con localhost:9090, el issuer será localhost:9090
-      # El Gateway valida el issuer del token, pero obtiene los JWKs usando la URL interna (keycloak:9090)
       KEYCLOAK_ISSUER_URI: http://localhost:9090/realms/tpi-backend
-      # Lista de issuers permitidos (separados por coma)
-      # Permite validar tokens obtenidos tanto internamente (keycloak:9090) como externamente (localhost:9090)
-      KEYCLOAK_ALLOWED_ISSUERS: http://localhost:9090/realms/tpi-backend,http://keycloak:9090/realms/tpi-backend
       KEYCLOAK_JWK_SET_URI: http://keycloak:9090/realms/tpi-backend/protocol/openid-connect/certs
       GATEWAY_LOG_LEVEL: INFO
       SECURITY_LOG_LEVEL: DEBUG
