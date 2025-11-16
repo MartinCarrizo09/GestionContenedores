@@ -73,10 +73,10 @@ public class ClienteControlador {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('OPERADOR')")
+    @PreAuthorize("hasAnyRole('OPERADOR', 'CLIENTE')")
     @Operation(
         summary = "Crear nuevo cliente",
-        description = "Registra un nuevo cliente en el sistema con los datos proporcionados"
+        description = "Registra un nuevo cliente en el sistema con los datos proporcionados. Los operadores pueden crear cualquier cliente. Los clientes pueden auto-registrarse a través de la creación de solicitudes."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Cliente creado exitosamente",

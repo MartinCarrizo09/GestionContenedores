@@ -73,7 +73,7 @@ public class ContenedorControlador {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('OPERADOR')")
+    @PreAuthorize("hasAnyRole('OPERADOR', 'CLIENTE')")
     public ResponseEntity<Contenedor> crear(@Valid @RequestBody Contenedor contenedor) {
         return ResponseEntity.ok(servicio.guardar(contenedor));
     }

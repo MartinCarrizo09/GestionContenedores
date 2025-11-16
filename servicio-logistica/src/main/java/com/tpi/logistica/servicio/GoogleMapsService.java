@@ -37,6 +37,7 @@ public class GoogleMapsService {
                     .toUriString();
 
             logger.info("Llamando a Google Maps API: origen={}, destino={}", origen, destino);
+            logger.info("URL completa (con API key censurada): {}", url.replaceAll("key=[^&]+", "key=***"));
 
 
 
@@ -56,8 +57,8 @@ public class GoogleMapsService {
 
 
             if (response == null || !"OK".equals(response.getStatus())) {
-                logger.error("Error en respuesta de Google Maps: status={}",
-                    response != null ? response.getStatus() : "null");
+                logger.error("Error en respuesta de Google Maps: status={}, response completa={}",
+                    response != null ? response.getStatus() : "null", response);
                 throw new RuntimeException("Error al consultar Google Maps API: " +
                     (response != null ? response.getStatus() : "respuesta nula"));
             }
@@ -72,7 +73,7 @@ public class GoogleMapsService {
 
 
             if (!"OK".equals(element.getStatus())) {
-                logger.error("Estado de elemento no válido: {}", element.getStatus());
+                logger.error("Estado de elemento no válido: {}. Element completo: {}", element.getStatus(), element);
                 throw new RuntimeException("No se pudo calcular la ruta: " + element.getStatus());
             }
 
