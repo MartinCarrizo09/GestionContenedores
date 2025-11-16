@@ -35,6 +35,7 @@ $realmBody = @{
     realm = $REALM
     enabled = $true
     displayName = "TPI Backend"
+    accessTokenLifespan = 1800
 } | ConvertTo-Json
 
 try {
@@ -48,6 +49,26 @@ try {
     Write-Host "   Realm '$REALM' creado`n" -ForegroundColor Green
 } catch {
     Write-Host "   Realm ya existe, continuando...`n" -ForegroundColor Yellow
+}
+
+# 2.1. Configurar duración del token (30 minutos)
+Write-Host "2.1. Configurando duración del token a 30 minutos..." -ForegroundColor Yellow
+
+$tokenSettings = @{
+    accessTokenLifespan = 1800
+} | ConvertTo-Json
+
+try {
+    Invoke-RestMethod -Uri "$KEYCLOAK_URL/admin/realms/$REALM" `
+        -Method Put `
+        -ContentType "application/json" `
+        -Headers @{Authorization = "Bearer $ADMIN_TOKEN"} `
+        -Body $tokenSettings `
+        -ErrorAction Stop
+    
+    Write-Host "   Token configurado para 30 minutos (1800 segundos)`n" -ForegroundColor Green
+} catch {
+    Write-Host "   Error configurando duración del token`n" -ForegroundColor Red
 }
 
 # 3. Crear Roles

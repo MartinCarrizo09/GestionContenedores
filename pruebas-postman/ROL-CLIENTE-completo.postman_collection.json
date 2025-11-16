@@ -21,8 +21,17 @@
 							"exec": [
 								"if (pm.response.code === 200) {",
 								"    var jsonData = pm.response.json();",
-								"    pm.collectionVariables.set('authToken', jsonData.access_token);",
-								"    console.log('✅ Token CLIENTE guardado');",
+								"    var token = jsonData.access_token;",
+								"    if (token) {",
+								"        pm.environment.set('authToken', token);",
+								"        pm.collectionVariables.set('authToken', token);",
+								"        console.log('✅ Token CLIENTE guardado correctamente');",
+								"        console.log('   Token: ' + token.substring(0, 30) + '...');",
+								"    } else {",
+								"        console.log('❌ Error: No se recibió access_token en la respuesta');",
+								"    }",
+								"} else {",
+								"    console.log('❌ Error al obtener token. Status: ' + pm.response.code);",
 								"}"
 							],
 							"type": "text/javascript"
@@ -57,12 +66,12 @@
 			"item": [
 				{"name": "GET - Listar Todos", "request": {"method": "GET", "header": [], "url": "http://localhost:8080/api/gestion/contenedores"}},
 				{"name": "GET - Por Cliente", "request": {"method": "GET", "header": [], "url": "http://localhost:8080/api/gestion/contenedores/cliente/1"}},
-				{"name": "GET - Por Código", "request": {"method": "GET", "header": [], "url": "http://localhost:8080/api/gestion/contenedores/codigo/CONT-20-00001"}},
-				{"name": "GET - Estado Por Código", "request": {"method": "GET", "header": [], "url": "http://localhost:8080/api/gestion/contenedores/codigo/CONT-20-00001/estado"}},
+				{"name": "GET - Por Código", "request": {"method": "GET", "header": [], "url": "http://localhost:8080/api/gestion/contenedores/codigo/REEF-20-00003"}},
+				{"name": "GET - Estado Por Código", "request": {"method": "GET", "header": [], "url": "http://localhost:8080/api/gestion/contenedores/codigo/REEF-20-00003/estado"}},
 				{"name": "GET - Estado Por ID", "request": {"method": "GET", "header": [], "url": "http://localhost:8080/api/gestion/contenedores/1/estado"}},
 				{"name": "GET - Por ID", "request": {"method": "GET", "header": [], "url": "http://localhost:8080/api/gestion/contenedores/1"}},
 				{"name": "POST - Crear", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n    \"codigoIdentificacion\": \"CONT-CLI-TEST-888\",\n    \"peso\": 2500.0,\n    \"volumen\": 30.0,\n    \"idCliente\": 1\n}"}, "url": "http://localhost:8080/api/gestion/contenedores"}},
-				{"name": "PUT - Actualizar", "request": {"method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n    \"codigoIdentificacion\": \"CONT-20-00001\",\n    \"peso\": 2600.0,\n    \"volumen\": 32.0,\n    \"idCliente\": 1\n}"}, "url": "http://localhost:8080/api/gestion/contenedores/1"}}
+				{"name": "PUT - Actualizar", "request": {"method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n    \"codigoIdentificacion\": \"REEF-20-00003\",\n    \"peso\": 2600.0,\n    \"volumen\": 32.0,\n    \"idCliente\": 2\n}"}, "url": "http://localhost:8080/api/gestion/contenedores/1"}}
 			]
 		},
 		{
@@ -108,7 +117,7 @@
 			"name": "🛣️ LOGÍSTICA - Rutas",
 			"item": [
 				{"name": "GET - Listar Todas", "request": {"method": "GET", "header": [], "url": "http://localhost:8080/api/logistica/rutas"}},
-				{"name": "GET - Por ID", "request": {"method": "GET", "header": [], "url": "http://localhost:8080/api/logistica/rutas/1"}},
+				{"name": "GET - Por ID", "request": {"method": "GET", "header": [], "url": "http://localhost:8080/api/logistica/rutas/3"}},
 				{"name": "GET - Por Solicitud", "request": {"method": "GET", "header": [], "url": "http://localhost:8080/api/logistica/rutas/solicitud/1"}}
 			]
 		},
