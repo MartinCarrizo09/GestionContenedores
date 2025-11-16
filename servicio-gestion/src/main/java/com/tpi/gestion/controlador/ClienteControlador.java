@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,6 +28,7 @@ public class ClienteControlador {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('OPERADOR')")
     @Operation(
         summary = "Listar todos los clientes",
         description = "Obtiene una lista completa de todos los clientes registrados en el sistema"
@@ -41,6 +43,7 @@ public class ClienteControlador {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('OPERADOR')")
     @Operation(
         summary = "Buscar cliente por ID",
         description = "Obtiene los detalles de un cliente específico mediante su identificador único"
@@ -61,6 +64,7 @@ public class ClienteControlador {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('OPERADOR')")
     @Operation(
         summary = "Crear nuevo cliente",
         description = "Registra un nuevo cliente en el sistema con los datos proporcionados"
@@ -83,6 +87,7 @@ public class ClienteControlador {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('OPERADOR')")
     @Operation(
         summary = "Actualizar cliente existente",
         description = "Modifica los datos de un cliente existente identificado por su ID"
@@ -108,6 +113,7 @@ public class ClienteControlador {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('OPERADOR')")
     @Operation(
         summary = "Eliminar cliente",
         description = "Elimina un cliente del sistema mediante su ID"

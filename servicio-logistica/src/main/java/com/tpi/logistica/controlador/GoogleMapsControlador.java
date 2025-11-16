@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,6 +22,7 @@ public class GoogleMapsControlador {
     }
 
     @GetMapping("/distancia")
+    @PreAuthorize("hasRole('OPERADOR')")
     public ResponseEntity<?> calcularDistancia(
             @RequestParam(required = true) String origen,
             @RequestParam(required = true) String destino) {
@@ -54,6 +56,7 @@ public class GoogleMapsControlador {
     }
 
     @GetMapping("/distancia-coords")
+    @PreAuthorize("hasRole('OPERADOR')")
     public ResponseEntity<?> calcularDistanciaPorCoordenadas(
             @RequestParam(required = true) Double lat1,
             @RequestParam(required = true) Double lng1,

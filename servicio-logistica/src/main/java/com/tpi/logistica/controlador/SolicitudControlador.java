@@ -10,6 +10,7 @@ import com.tpi.logistica.dto.SolicitudCompletaRequest;
 import com.tpi.logistica.dto.SolicitudCompletaResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,11 +26,13 @@ public class SolicitudControlador {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('OPERADOR')")
     public List<Solicitud> listarTodas() {
         return servicio.listar();
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('OPERADOR') or hasRole('CLIENTE')")
     public ResponseEntity<Solicitud> buscarPorId(@PathVariable Long id) {
         return servicio.buscarPorId(id)
                 .map(ResponseEntity::ok)
@@ -37,6 +40,7 @@ public class SolicitudControlador {
     }
 
     @GetMapping("/seguimiento/{numeroSeguimiento}")
+    @PreAuthorize("hasRole('OPERADOR') or hasRole('CLIENTE')")
     public ResponseEntity<Solicitud> buscarPorNumeroSeguimiento(@PathVariable String numeroSeguimiento) {
         return servicio.buscarPorNumeroSeguimiento(numeroSeguimiento)
                 .map(ResponseEntity::ok)
@@ -44,16 +48,19 @@ public class SolicitudControlador {
     }
 
     @GetMapping("/cliente/{idCliente}")
+    @PreAuthorize("hasRole('OPERADOR') or hasRole('CLIENTE')")
     public List<Solicitud> listarPorCliente(@PathVariable Long idCliente) {
         return servicio.listarPorCliente(idCliente);
     }
 
     @GetMapping("/estado/{estado}")
+    @PreAuthorize("hasRole('OPERADOR')")
     public List<Solicitud> listarPorEstado(@PathVariable String estado) {
         return servicio.listarPorEstado(estado);
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('OPERADOR') or hasRole('CLIENTE')")
     public ResponseEntity<Solicitud> crear(@Valid @RequestBody Solicitud solicitud) {
         Solicitud nueva = servicio.guardar(solicitud);
         return ResponseEntity.ok(nueva);
@@ -72,6 +79,7 @@ public class SolicitudControlador {
      * @return Response con IDs generados e información de qué se creó
      */
     @PostMapping("/completa")
+    @PreAuthorize("hasRole('OPERADOR') or hasRole('CLIENTE')")
     public ResponseEntity<SolicitudCompletaResponse> crearSolicitudCompleta(
             @Valid @RequestBody SolicitudCompletaRequest request) {
         SolicitudCompletaResponse response = servicio.crearSolicitudCompleta(request);
@@ -79,24 +87,28 @@ public class SolicitudControlador {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('OPERADOR')")
     public ResponseEntity<Solicitud> actualizar(@PathVariable Long id,
                                                @Valid @RequestBody Solicitud datos) {
         return ResponseEntity.ok(servicio.actualizar(id, datos));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('OPERADOR')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         servicio.eliminar(id);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/estimar-ruta")
+    @PreAuthorize("hasRole('OPERADOR')")
     public ResponseEntity<EstimacionRutaResponse> estimarRuta(@Valid @RequestBody EstimacionRutaRequest request) {
         EstimacionRutaResponse estimacion = servicio.estimarRuta(request);
         return ResponseEntity.ok(estimacion);
     }
 
     @PostMapping("/{id}/asignar-ruta")
+    @PreAuthorize("hasRole('OPERADOR')")
     public ResponseEntity<Solicitud> asignarRuta(@PathVariable Long id,
                                                  @Valid @RequestBody EstimacionRutaRequest datosRuta) {
         Solicitud solicitud = servicio.asignarRuta(id, datosRuta);
@@ -104,6 +116,7 @@ public class SolicitudControlador {
     }
 
     @GetMapping("/seguimiento-detallado/{numeroSeguimiento}")
+    @PreAuthorize("hasRole('OPERADOR') or hasRole('CLIENTE')")
     public ResponseEntity<SeguimientoSolicitudResponse> obtenerSeguimientoDetallado(
             @PathVariable String numeroSeguimiento) {
         SeguimientoSolicitudResponse seguimiento = servicio.obtenerSeguimiento(numeroSeguimiento);
@@ -111,6 +124,7 @@ public class SolicitudControlador {
     }
 
     @GetMapping("/pendientes")
+    @PreAuthorize("hasRole('OPERADOR')")
     public ResponseEntity<List<ContenedorPendienteResponse>> listarPendientes(
             @RequestParam(required = false) String estado,
             @RequestParam(required = false) Long idContenedor) {

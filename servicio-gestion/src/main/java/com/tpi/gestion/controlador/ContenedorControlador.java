@@ -5,6 +5,7 @@ import com.tpi.gestion.servicio.ContenedorServicio;
 import com.tpi.gestion.dto.EstadoContenedorResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,16 +21,19 @@ public class ContenedorControlador {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('OPERADOR')")
     public List<Contenedor> listarTodos() {
         return servicio.listar();
     }
 
     @GetMapping("/cliente/{idCliente}")
+    @PreAuthorize("hasRole('OPERADOR') or hasRole('CLIENTE')")
     public List<Contenedor> listarPorCliente(@PathVariable Long idCliente) {
         return servicio.listarPorCliente(idCliente);
     }
 
     @GetMapping("/codigo/{codigo}")
+    @PreAuthorize("hasRole('OPERADOR') or hasRole('CLIENTE')")
     public ResponseEntity<Contenedor> buscarPorCodigo(@PathVariable String codigo) {
         return servicio.buscarPorCodigo(codigo)
                 .map(ResponseEntity::ok)
@@ -37,6 +41,7 @@ public class ContenedorControlador {
     }
 
     @GetMapping("/codigo/{codigo}/estado")
+    @PreAuthorize("hasRole('OPERADOR') or hasRole('CLIENTE')")
     public ResponseEntity<EstadoContenedorResponse> obtenerEstadoPorCodigo(@PathVariable String codigo) {
         EstadoContenedorResponse estado = servicio.obtenerEstadoPorCodigo(codigo);
         return ResponseEntity.ok(estado);
@@ -44,12 +49,14 @@ public class ContenedorControlador {
 
 
     @GetMapping("/{id}/estado")
+    @PreAuthorize("hasRole('OPERADOR') or hasRole('CLIENTE')")
     public ResponseEntity<EstadoContenedorResponse> obtenerEstado(@PathVariable Long id) {
         EstadoContenedorResponse estado = servicio.obtenerEstado(id);
         return ResponseEntity.ok(estado);
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('OPERADOR') or hasRole('CLIENTE')")
     public ResponseEntity<Contenedor> buscarPorId(@PathVariable Long id) {
         return servicio.buscarPorId(id)
                 .map(ResponseEntity::ok)
@@ -57,17 +64,20 @@ public class ContenedorControlador {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('OPERADOR')")
     public ResponseEntity<Contenedor> crear(@Valid @RequestBody Contenedor contenedor) {
         return ResponseEntity.ok(servicio.guardar(contenedor));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('OPERADOR')")
     public ResponseEntity<Contenedor> actualizar(@PathVariable Long id,
                                                  @Valid @RequestBody Contenedor datos) {
         return ResponseEntity.ok(servicio.actualizar(id, datos));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('OPERADOR')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         servicio.eliminar(id);
         return ResponseEntity.noContent().build();
