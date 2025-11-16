@@ -1,8 +1,10 @@
 package com.tpi.gestion.config;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.Contact;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +24,13 @@ public class OpenApiConfig {
     @Bean
     public OpenAPI gestionOpenAPI() {
         return new OpenAPI()
+            .components(new Components()
+                .addSecuritySchemes("Bearer Authentication", 
+                    new SecurityScheme()
+                        .type(SecurityScheme.Type.HTTP)
+                        .scheme("bearer")
+                        .bearerFormat("JWT")
+                        .description("Ingresa el JWT token obtenido de Keycloak")))
             .info(new Info()
                 .title("API - Servicio de Gestión")
                 .description("""
@@ -32,6 +41,14 @@ public class OpenApiConfig {
                     - Gestión de Contenedores (CRUD)
                     - Gestión de Depósitos (CRUD)
                     - Gestión de Tarifas (CRUD)
+                    
+                    **Autenticación:**
+                    Requiere JWT token de Keycloak. Obtén el token desde:
+                    POST http://localhost:9090/realms/tpi-backend/protocol/openid-connect/token
+                    
+                    **Roles disponibles:**
+                    - CLIENTE: Puede consultar sus propios contenedores
+                    - OPERADOR: Acceso completo a todas las operaciones
                     
                     **Puerto:** 8081
                     **Context Path:** /api/gestion

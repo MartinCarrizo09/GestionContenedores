@@ -23,10 +23,20 @@ import com.tpi.logistica.dto.SolicitudCompletaResponse;
 import com.tpi.logistica.modelo.Solicitud;
 import com.tpi.logistica.servicio.SolicitudServicio;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/solicitudes")
+@Tag(name = "Solicitudes", description = "API para gestión de solicitudes de transporte de contenedores")
+@SecurityRequirement(name = "Bearer Authentication")
 public class SolicitudControlador {
 
     private final SolicitudServicio servicio;

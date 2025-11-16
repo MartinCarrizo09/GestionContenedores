@@ -1,8 +1,10 @@
 package com.tpi.logistica.config;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.Contact;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +24,13 @@ public class OpenApiConfig {
     @Bean
     public OpenAPI logisticaOpenAPI() {
         return new OpenAPI()
+            .components(new Components()
+                .addSecuritySchemes("Bearer Authentication", 
+                    new SecurityScheme()
+                        .type(SecurityScheme.Type.HTTP)
+                        .scheme("bearer")
+                        .bearerFormat("JWT")
+                        .description("Ingresa el JWT token obtenido de Keycloak")))
             .info(new Info()
                 .title("API - Servicio de Logística")
                 .description("""
@@ -34,6 +43,15 @@ public class OpenApiConfig {
                     - Cálculo de tarifas y costos
                     - Integración con Google Maps API
                     - Seguimiento de estado de solicitudes
+                    
+                    **Autenticación:**
+                    Requiere JWT token de Keycloak. Obtén el token desde:
+                    POST http://localhost:9090/realms/tpi-backend/protocol/openid-connect/token
+                    
+                    **Roles disponibles:**
+                    - CLIENTE: Puede crear solicitudes y consultar estado
+                    - OPERADOR: Acceso completo a todas las operaciones
+                    - TRANSPORTISTA: Puede iniciar y finalizar tramos
                     
                     **Puerto:** 8083
                     **Context Path:** /api/logistica
