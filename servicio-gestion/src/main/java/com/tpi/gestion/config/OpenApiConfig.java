@@ -13,8 +13,8 @@ import java.util.List;
  * Configuración de OpenAPI/Swagger para el Servicio de Gestión.
  * 
  * Proporciona documentación interactiva de la API REST en:
- * - Swagger UI: http://localhost:8081/api-gestion/swagger-ui.html
- * - OpenAPI JSON: http://localhost:8081/api-gestion/api-docs
+ * - Swagger UI: http://localhost:8081/api/gestion/swagger-ui.html
+ * - OpenAPI JSON: http://localhost:8081/api/gestion/api-docs
  */
 @Configuration
 public class OpenApiConfig {
@@ -34,7 +34,7 @@ public class OpenApiConfig {
                     - Gestión de Tarifas (CRUD)
                     
                     **Puerto:** 8081
-                    **Context Path:** /api-gestion
+                    **Context Path:** /api/gestion
                     **Base de Datos:** PostgreSQL (Schema: gestion)
                     """)
                 .version("1.0.0")
@@ -43,10 +43,10 @@ public class OpenApiConfig {
                     .email("desarrollo@tpi.com")))
             .servers(List.of(
                 new Server()
-                    .url("http://localhost:8081/api-gestion")
+                    .url("http://localhost:8081/api/gestion")
                     .description("Servidor Local - Desarrollo"),
                 new Server()
-                    .url("http://localhost:8080/servicio-gestion")
+                    .url("http://localhost:8080/api/gestion")
                     .description("A través del API Gateway")
             ));
     }

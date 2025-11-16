@@ -16,7 +16,7 @@ public class LogisticaClienteServicio {
 
     private final RestTemplate restTemplate;
     
-    @Value("${servicio.logistica.url:http://localhost:8082/api-logistica}")
+    @Value("${servicio.logistica.url:http://localhost:8082/api/logistica}")
     private String logisticaBaseUrl;
 
     public LogisticaClienteServicio(RestTemplate restTemplate) {

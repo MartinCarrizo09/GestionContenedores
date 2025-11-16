@@ -56,7 +56,7 @@ spring:
 server:
   port: ${SERVER_PORT:8082}
   servlet:
-    context-path: /api-logistica
+    context-path: /api/logistica
 
 # ========== Google Maps API Configuration ==========
 google:
@@ -67,9 +67,9 @@ google:
 # ========== Configuración de Microservicios ==========
 servicio:
   gestion:
-    url: ${SERVICIO_GESTION_URL:http://localhost:8080/api-gestion}
+    url: ${SERVICIO_GESTION_URL:http://localhost:8080/api/gestion}
   flota:
-    url: ${SERVICIO_FLOTA_URL:http://localhost:8081/api-flota}
+    url: ${SERVICIO_FLOTA_URL:http://localhost:8081/api/flota}
 
 # ========== Logging ==========
 logging:

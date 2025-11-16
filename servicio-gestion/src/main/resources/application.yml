@@ -56,7 +56,7 @@ spring:
 server:
   port: ${SERVER_PORT:8080}
   servlet:
-    context-path: /api-gestion
+    context-path: /api/gestion
 
 # ========== Logging ==========
 logging:
@@ -75,7 +75,7 @@ logging:
 # ========== Configuración de Microservicios ==========
 servicio:
   logistica:
-    url: ${SERVICIO_LOGISTICA_URL:http://localhost:8082/api-logistica}
+    url: ${SERVICIO_LOGISTICA_URL:http://localhost:8082/api/logistica}
 
 # ========== Configuración de Swagger/OpenAPI ==========
 springdoc:

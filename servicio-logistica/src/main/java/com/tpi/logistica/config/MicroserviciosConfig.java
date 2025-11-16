@@ -6,10 +6,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class MicroserviciosConfig {
 
-    @Value("${servicio.gestion.url:http://localhost:8080/api-gestion}")
+    @Value("${servicio.gestion.url:http://localhost:8080/api/gestion}")
     private String servicioGestionUrl;
 
-    @Value("${servicio.flota.url:http://localhost:8081/api-flota}")
+    @Value("${servicio.flota.url:http://localhost:8081/api/flota}")
     private String servicioFlotaUrl;
 
     public String getServicioGestionUrl() {

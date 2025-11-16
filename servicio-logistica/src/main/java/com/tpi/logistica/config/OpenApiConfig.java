@@ -13,8 +13,8 @@ import java.util.List;
  * Configuración de OpenAPI/Swagger para el Servicio de Logística.
  * 
  * Proporciona documentación interactiva de la API REST en:
- * - Swagger UI: http://localhost:8083/api-logistica/swagger-ui.html
- * - OpenAPI JSON: http://localhost:8083/api-logistica/api-docs
+ * - Swagger UI: http://localhost:8083/api/logistica/swagger-ui.html
+ * - OpenAPI JSON: http://localhost:8083/api/logistica/api-docs
  */
 @Configuration
 public class OpenApiConfig {
@@ -36,7 +36,7 @@ public class OpenApiConfig {
                     - Seguimiento de estado de solicitudes
                     
                     **Puerto:** 8083
-                    **Context Path:** /api-logistica
+                    **Context Path:** /api/logistica
                     **Base de Datos:** PostgreSQL (Schema: logistica)
                     **Integraciones:** Google Maps Distance Matrix API
                     """)
@@ -46,10 +46,10 @@ public class OpenApiConfig {
                     .email("desarrollo@tpi.com")))
             .servers(List.of(
                 new Server()
-                    .url("http://localhost:8083/api-logistica")
+                    .url("http://localhost:8083/api/logistica")
                     .description("Servidor Local - Desarrollo"),
                 new Server()
-                    .url("http://localhost:8080/servicio-logistica")
+                    .url("http://localhost:8080/api/logistica")
                     .description("A través del API Gateway")
             ));
     }

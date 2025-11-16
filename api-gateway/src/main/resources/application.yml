@@ -46,7 +46,6 @@ spring:
           predicates:
             - Path=/api/gestion/**
           filters:
-            - RewritePath=/api/gestion/(?<segment>.*), /api-gestion/$\{segment}
             - name: CircuitBreaker
               args:
                 name: gestionCircuitBreaker
@@ -58,7 +57,6 @@ spring:
           predicates:
             - Path=/api/flota/**
           filters:
-            - RewritePath=/api/flota/(?<segment>.*), /api-flota/$\{segment}
             - name: CircuitBreaker
               args:
                 name: flotaCircuitBreaker
@@ -70,7 +68,6 @@ spring:
           predicates:
             - Path=/api/logistica/**
           filters:
-            - RewritePath=/api/logistica/(?<segment>.*), /api-logistica/$\{segment}
             - name: CircuitBreaker
               args:
                 name: logisticaCircuitBreaker

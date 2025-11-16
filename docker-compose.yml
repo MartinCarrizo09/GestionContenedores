@@ -180,8 +180,8 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: none
       SERVER_PORT: 8083
       # URLs de otros microservicios (dentro de Docker network)
-      SERVICIO_GESTION_URL: http://servicio-gestion:8081/api-gestion
-      SERVICIO_FLOTA_URL: http://servicio-flota:8082/api-flota
+      SERVICIO_GESTION_URL: http://servicio-gestion:8081/api/gestion
+      SERVICIO_FLOTA_URL: http://servicio-flota:8082/api/flota
       # Google Maps API Key
       GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-AIzaSyDlQYVvd-umbnNaucd8P990P7cgkyGCDsU}
     ports:

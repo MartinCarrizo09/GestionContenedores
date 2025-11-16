@@ -13,8 +13,8 @@ import java.util.List;
  * Configuración de OpenAPI/Swagger para el Servicio de Flota.
  * 
  * Proporciona documentación interactiva de la API REST en:
- * - Swagger UI: http://localhost:8082/api-flota/swagger-ui.html
- * - OpenAPI JSON: http://localhost:8082/api-flota/api-docs
+ * - Swagger UI: http://localhost:8082/api/flota/swagger-ui.html
+ * - OpenAPI JSON: http://localhost:8082/api/flota/api-docs
  */
 @Configuration
 public class OpenApiConfig {
@@ -34,7 +34,7 @@ public class OpenApiConfig {
                     - Asignación de camiones a tramos
                     
                     **Puerto:** 8082
-                    **Context Path:** /api-flota
+                    **Context Path:** /api/flota
                     **Base de Datos:** PostgreSQL (Schema: flota)
                     """)
                 .version("1.0.0")
@@ -43,10 +43,10 @@ public class OpenApiConfig {
                     .email("desarrollo@tpi.com")))
             .servers(List.of(
                 new Server()
-                    .url("http://localhost:8082/api-flota")
+                    .url("http://localhost:8082/api/flota")
                     .description("Servidor Local - Desarrollo"),
                 new Server()
-                    .url("http://localhost:8080/servicio-flota")
+                    .url("http://localhost:8080/api/flota")
                     .description("A través del API Gateway")
             ));
     }

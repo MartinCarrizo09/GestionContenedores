@@ -67,11 +67,6 @@
 									"type": "text"
 								},
 								{
-									"key": "client_secret",
-									"value": "7SBPFfvdXDn0y6gYa4L0qX4wz7FIoXaS",
-									"type": "text"
-								},
-								{
 									"key": "username",
 									"value": "cliente@tpi.com",
 									"type": "text"
@@ -150,11 +145,6 @@
 									"type": "text"
 								},
 								{
-									"key": "client_secret",
-									"value": "7SBPFfvdXDn0y6gYa4L0qX4wz7FIoXaS",
-									"type": "text"
-								},
-								{
 									"key": "username",
 									"value": "operador@tpi.com",
 									"type": "text"
@@ -230,11 +220,6 @@
 								{
 									"key": "client_id",
 									"value": "tpi-client",
-									"type": "text"
-								},
-								{
-									"key": "client_secret",
-									"value": "7SBPFfvdXDn0y6gYa4L0qX4wz7FIoXaS",
 									"type": "text"
 								},
 								{
