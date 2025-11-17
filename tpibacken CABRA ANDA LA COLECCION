@@ -1,15 +1,14 @@
 {
 	"info": {
-		"_postman_id": "93d98654-336b-41ee-9e8a-ac3f21535e43",
+		"_postman_id": "62215cfe-8460-41e3-abe1-863f1706d6fe",
 		"name": "TPI Backend - Colección Ejecutable",
 		"description": "Colección ejecutable con autenticación para CLIENTE, OPERADOR y TRANSPORTISTA. Incluye los escenarios S1, S2 y S3.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "49840666",
-		"_collection_link": "https://gonzalomaurino-6170661.postman.co/workspace/Gonzalo-Maurino-Medina-'s-Works~9c146a9e-4c38-4c1e-85a4-c5feb3da3464/collection/49840666-93d98654-336b-41ee-9e8a-ac3f21535e43?action=share&source=collection_link&creator=49840666"
+		"_exporter_id": "45339799"
 	},
 	"item": [
 		{
-			"name": "🔑 Autenticación",
+			"name": "📋 S1 - CLIENTE: Crear Solicitud y Seguimiento",
 			"item": [
 				{
 					"name": "Obtener Token - CLIENTE",
@@ -86,6 +85,106 @@
 					"response": []
 				},
 				{
+					"name": "S1-1 - Crear solicitud completa",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"numeroSeguimiento\": \"CLI-2025-120\",\n  \"origenDireccion\": \"Córdoba, Argentina\",\n  \"origenLatitud\": -31.4201,\n  \"origenLongitud\": -64.1888,\n  \"destinoDireccion\": \"Buenos Aires, Argentina\",\n  \"destinoLatitud\": -34.6037,\n  \"destinoLongitud\": -58.3816,\n  \"clienteNombre\": \"Carlos\",\n  \"clienteApellido\": \"Cliente\",\n  \"clienteEmail\": \"chupete4@gmail.com\",\n  \"clienteTelefono\": \"+54 341 5555545\",\n  \"clienteCuil\": \"20-11121111-1\",\n  \"codigoIdentificacion\": \"CONT-CLI-222\",\n  \"peso\": 3000.0,\n  \"volumen\": 35.0\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/logistica/solicitudes/completa",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"logistica",
+								"solicitudes",
+								"completa"
+							]
+						},
+						"description": "El Gateway valida el JWT con Keycloak y enruta al microservicio de Logística. Logística crea cliente/contenedor si corresponde y deja la solicitud en estado inicial."
+					},
+					"response": []
+				},
+				{
+					"name": "S1-2 - Consultar estado del contenedor",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8080/api/gestion/contenedores/201/estado",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"gestion",
+								"contenedores",
+								"201",
+								"estado"
+							]
+						},
+						"description": "El cliente puede consultar el estado de sus contenedores. El servicio de Gestión consulta al servicio de Logística para obtener la información de tramos."
+					},
+					"response": []
+				},
+				{
+					"name": "S1-3 - Consultar seguimiento por número",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8080/api/logistica/solicitudes/seguimiento/CLI-2025-120",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"logistica",
+								"solicitudes",
+								"seguimiento",
+								"CLI-2025-120"
+							]
+						},
+						"description": "El cliente solo puede ver sus propias solicitudes. El microservicio de Logística arma el DTO con info de tramos y contenedor."
+					},
+					"response": []
+				}
+			],
+			"description": "Cliente registra una solicitud completa y consulta el estado del contenedor y seguimiento de la solicitud."
+		},
+		{
+			"name": "🔧 S2 - OPERADOR: Estimar, Asignar Ruta y Camión",
+			"item": [
+				{
 					"name": "Obtener Token - OPERADOR",
 					"event": [
 						{
@@ -160,6 +259,174 @@
 					"response": []
 				},
 				{
+					"name": "S2-1 - Estimar ruta",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"origenLatitud\": -31.4201,\n  \"origenLongitud\": -64.1888,\n  \"destinoLatitud\": -34.6037,\n  \"destinoLongitud\": -58.3816,\n  \"pesoKg\": 3000.0,\n  \"volumenM3\": 35.0\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/logistica/solicitudes/estimar-ruta",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"logistica",
+								"solicitudes",
+								"estimar-ruta"
+							]
+						},
+						"description": "Endpoint reservado a operador para estimar costos y tramos de una ruta."
+					},
+					"response": []
+				},
+				{
+					"name": "S2-2 - Asignar ruta a solicitud",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"origenLatitud\": -31.4201,\n  \"origenLongitud\": -64.1888,\n  \"destinoLatitud\": -34.6037,\n  \"destinoLongitud\": -58.3816,\n  \"pesoKg\": 3000.0,\n  \"volumenM3\": 35.0\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/logistica/solicitudes/11/asignar-ruta",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"logistica",
+								"solicitudes",
+								"11",
+								"asignar-ruta"
+							]
+						},
+						"description": "El endpoint /asignar-ruta crea automáticamente la ruta y los tramos asociados. La solicitud cambia a estado PROGRAMADA."
+					},
+					"response": []
+				},
+				{
+					"name": "S2-4-Obtener ID ruta",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/logistica/rutas/solicitud/11",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"logistica",
+								"rutas",
+								"solicitud",
+								"11"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "S2-5-Obtener ID tramo",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/logistica/tramos/ruta/3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"logistica",
+								"tramos",
+								"ruta",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "S2-3 - Asignar camión a tramo",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8080/api/logistica/tramos/2/asignar-camion?patente=ABC123&peso=3000&volumen=25",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"logistica",
+								"tramos",
+								"2",
+								"asignar-camion"
+							],
+							"query": [
+								{
+									"key": "patente",
+									"value": "ABC123"
+								},
+								{
+									"key": "peso",
+									"value": "3000"
+								},
+								{
+									"key": "volumen",
+									"value": "25"
+								}
+							]
+						},
+						"description": "El servicio de Logística valida disponibilidad y capacidad del camión llamando al microservicio de Flota. Si todo está OK, el tramo queda ASIGNADO."
+					},
+					"response": []
+				}
+			],
+			"description": "Operador toma una solicitud pendiente, estima ruta, crea la ruta en el sistema y asigna un camión respetando reglas de negocio."
+		},
+		{
+			"name": "🚚 S3 - TRANSPORTISTA: Iniciar y Finalizar Tramo",
+			"item": [
+				{
 					"name": "Obtener Token - TRANSPORTISTA",
 					"event": [
 						{
@@ -232,280 +499,7 @@
 						"description": "Autentica al transportista para poder gestionar sus tramos asignados."
 					},
 					"response": []
-				}
-			]
-		},
-		{
-			"name": "📋 S1 - CLIENTE: Crear Solicitud y Seguimiento",
-			"item": [
-				{
-					"name": "S1-1 - Crear solicitud completa",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							},
-							{
-								"key": "Authorization",
-								"value": "Bearer {{authToken}}"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"numeroSeguimiento\": \"CLI-2025-010\",\n  \"origenDireccion\": \"Córdoba, Argentina\",\n  \"origenLatitud\": -31.4201,\n  \"origenLongitud\": -64.1888,\n  \"destinoDireccion\": \"Buenos Aires, Argentina\",\n  \"destinoLatitud\": -34.6037,\n  \"destinoLongitud\": -58.3816,\n  \"clienteNombre\": \"Carlos\",\n  \"clienteApellido\": \"Cliente\",\n  \"clienteEmail\": \"pingoenelorto@gmail.com\",\n  \"clienteTelefono\": \"+54 341 5555555\",\n  \"clienteCuil\": \"20-11111111-1\",\n  \"codigoIdentificacion\": \"CONT-CLI-200\",\n  \"peso\": 3000.0,\n  \"volumen\": 35.0\n}"
-						},
-						"url": {
-							"raw": "http://localhost:8080/api/logistica/solicitudes/completa",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"logistica",
-								"solicitudes",
-								"completa"
-							]
-						},
-						"description": "El Gateway valida el JWT con Keycloak y enruta al microservicio de Logística. Logística crea cliente/contenedor si corresponde y deja la solicitud en estado inicial."
-					},
-					"response": []
 				},
-				{
-					"name": "S1-2 - Consultar estado del contenedor",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{authToken}}"
-							}
-						],
-						"url": {
-							"raw": "http://localhost:8080/api/gestion/contenedores/1/estado",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"gestion",
-								"contenedores",
-								"1",
-								"estado"
-							]
-						},
-						"description": "El cliente puede consultar el estado de sus contenedores. El servicio de Gestión consulta al servicio de Logística para obtener la información de tramos."
-					},
-					"response": []
-				},
-				{
-					"name": "S1-3 - Consultar seguimiento por número",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{authToken}}"
-							}
-						],
-						"url": {
-							"raw": "http://localhost:8080/api/logistica/solicitudes/seguimiento/CLI-2025-001",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"logistica",
-								"solicitudes",
-								"seguimiento",
-								"CLI-2025-001"
-							]
-						},
-						"description": "El cliente solo puede ver sus propias solicitudes. El microservicio de Logística arma el DTO con info de tramos y contenedor."
-					},
-					"response": []
-				}
-			],
-			"description": "Cliente registra una solicitud completa y consulta el estado del contenedor y seguimiento de la solicitud."
-		},
-		{
-			"name": "🔧 S2 - OPERADOR: Estimar, Asignar Ruta y Camión",
-			"item": [
-				{
-					"name": "S2-1 - Estimar ruta",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							},
-							{
-								"key": "Authorization",
-								"value": "Bearer {{authToken}}"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"origenLatitud\": -31.4201,\n  \"origenLongitud\": -64.1888,\n  \"destinoLatitud\": -34.6037,\n  \"destinoLongitud\": -58.3816,\n  \"pesoKg\": 3000.0,\n  \"volumenM3\": 35.0\n}"
-						},
-						"url": {
-							"raw": "http://localhost:8080/api/logistica/solicitudes/estimar-ruta",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"logistica",
-								"solicitudes",
-								"estimar-ruta"
-							]
-						},
-						"description": "Endpoint reservado a operador para estimar costos y tramos de una ruta."
-					},
-					"response": []
-				},
-				{
-					"name": "S2-2 - Asignar ruta a solicitud",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							},
-							{
-								"key": "Authorization",
-								"value": "Bearer {{authToken}}"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"origenLatitud\": -31.4201,\n  \"origenLongitud\": -64.1888,\n  \"destinoLatitud\": -34.6037,\n  \"destinoLongitud\": -58.3816,\n  \"pesoKg\": 3000.0,\n  \"volumenM3\": 35.0\n}"
-						},
-						"url": {
-							"raw": "http://localhost:8080/api/logistica/solicitudes/12/asignar-ruta",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"logistica",
-								"solicitudes",
-								"12",
-								"asignar-ruta"
-							]
-						},
-						"description": "El endpoint /asignar-ruta crea automáticamente la ruta y los tramos asociados. La solicitud cambia a estado PROGRAMADA."
-					},
-					"response": []
-				},
-				{
-					"name": "S2-3 - Asignar camión a tramo",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{authToken}}"
-							}
-						],
-						"url": {
-							"raw": "http://localhost:8080/api/logistica/tramos/3/asignar-camion?patente=ABC123&peso=3000&volumen=25",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"logistica",
-								"tramos",
-								"3",
-								"asignar-camion"
-							],
-							"query": [
-								{
-									"key": "patente",
-									"value": "ABC123"
-								},
-								{
-									"key": "peso",
-									"value": "3000"
-								},
-								{
-									"key": "volumen",
-									"value": "25"
-								}
-							]
-						},
-						"description": "El servicio de Logística valida disponibilidad y capacidad del camión llamando al microservicio de Flota. Si todo está OK, el tramo queda ASIGNADO."
-					},
-					"response": []
-				},
-				{
-					"name": "S2-4-Obtener ID ruta",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api/logistica/rutas/solicitud/12",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"logistica",
-								"rutas",
-								"solicitud",
-								"12"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "S2-5-Obtener ID tramo",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api/logistica/tramos/ruta/4",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"logistica",
-								"tramos",
-								"ruta",
-								"4"
-							]
-						}
-					},
-					"response": []
-				}
-			],
-			"description": "Operador toma una solicitud pendiente, estima ruta, crea la ruta en el sistema y asigna un camión respetando reglas de negocio."
-		},
-		{
-			"name": "🚚 S3 - TRANSPORTISTA: Iniciar y Finalizar Tramo",
-			"item": [
 				{
 					"name": "S3-1 - Ver tramos asignados",
 					"request": {
@@ -546,7 +540,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/api/logistica/tramos/3/iniciar",
+							"raw": "http://localhost:8080/api/logistica/tramos/2/iniciar",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -556,7 +550,7 @@
 								"api",
 								"logistica",
 								"tramos",
-								"3",
+								"2",
 								"iniciar"
 							]
 						},
@@ -575,7 +569,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/api/logistica/tramos/3/finalizar?kmReales=715.5&costoKmCamion=120&consumoCamion=0.3",
+							"raw": "http://localhost:8080/api/logistica/tramos/2/finalizar?kmReales=715.5&costoKmCamion=120&consumoCamion=0.3",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -585,7 +579,7 @@
 								"api",
 								"logistica",
 								"tramos",
-								"3",
+								"2",
 								"finalizar"
 							],
 							"query": [
