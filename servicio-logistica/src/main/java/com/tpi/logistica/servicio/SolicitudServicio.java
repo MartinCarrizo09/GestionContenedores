@@ -12,6 +12,7 @@ import com.tpi.logistica.dto.SeguimientoSolicitudResponse;
 import com.tpi.logistica.dto.ContenedorPendienteResponse;
 import com.tpi.logistica.dto.SolicitudCompletaRequest;
 import com.tpi.logistica.dto.SolicitudCompletaResponse;
+import com.tpi.logistica.dto.DepositoDTO;
 import com.tpi.logistica.dto.googlemaps.DistanciaYDuracion;
 import com.tpi.logistica.config.MicroserviciosConfig;
 import org.slf4j.Logger;
@@ -36,6 +37,7 @@ public class SolicitudServicio {
     private final TramoRepositorio tramoRepositorio;
     private final CalculoTarifaServicio calculoTarifaServicio;
     private final GoogleMapsService googleMapsService;
+    private final DepositoServicio depositoServicio;
     private final RestTemplate restTemplate;
     private final MicroserviciosConfig microserviciosConfig;
 
@@ -44,6 +46,7 @@ public class SolicitudServicio {
                             TramoRepositorio tramoRepositorio,
                             CalculoTarifaServicio calculoTarifaServicio,
                             GoogleMapsService googleMapsService,
+                            DepositoServicio depositoServicio,
                             RestTemplate restTemplate,
                             MicroserviciosConfig microserviciosConfig) {
         this.repositorio = repositorio;
@@ -51,6 +54,7 @@ public class SolicitudServicio {
         this.tramoRepositorio = tramoRepositorio;
         this.calculoTarifaServicio = calculoTarifaServicio;
         this.googleMapsService = googleMapsService;
+        this.depositoServicio = depositoServicio;
         this.restTemplate = restTemplate;
         this.microserviciosConfig = microserviciosConfig;
     }
@@ -478,51 +482,170 @@ public class SolicitudServicio {
             throw new RuntimeException("Solo se pueden asignar rutas a solicitudes en estado BORRADOR");
         }
 
-
-        DistanciaYDuracion distancia;
-
-        if (solicitud.getOrigenLatitud() != null && solicitud.getOrigenLongitud() != null &&
-            solicitud.getDestinoLatitud() != null && solicitud.getDestinoLongitud() != null) {
-            distancia = googleMapsService.calcularDistanciaPorCoordenadas(
-                solicitud.getOrigenLatitud(), solicitud.getOrigenLongitud(),
-                solicitud.getDestinoLatitud(), solicitud.getDestinoLongitud()
-            );
-        } else {
-            distancia = googleMapsService.calcularDistanciaYDuracion(
-                solicitud.getOrigenDireccion(),
-                solicitud.getDestinoDireccion()
-            );
-        }
-
-
+        // Crear la ruta
         Ruta ruta = Ruta.builder()
                 .idSolicitud(idSolicitud)
                 .build();
         ruta = rutaRepositorio.save(ruta);
 
+        // Buscar depósitos intermedios en la ruta
+        List<DepositoDTO> depositosIntermedios = List.of();
+        if (solicitud.getOrigenLatitud() != null && solicitud.getOrigenLongitud() != null &&
+            solicitud.getDestinoLatitud() != null && solicitud.getDestinoLongitud() != null) {
+            
+            depositosIntermedios = depositoServicio.buscarDepositosEnRuta(
+                solicitud.getOrigenLatitud(), solicitud.getOrigenLongitud(),
+                solicitud.getDestinoLatitud(), solicitud.getDestinoLongitud()
+            );
+            
+            log.info("Depósitos intermedios encontrados: {}", depositosIntermedios.size());
+        }
 
-        Double distanciaKm = distancia.getDistanciaKm();
-        Double tiempoEstimadoHoras = distancia.getDuracionHoras();
-        Double consumoPromedio = 0.15;
-        Double costoEstimado = calculoTarifaServicio.calcularCostoEstimadoTramo(distanciaKm, consumoPromedio);
+        // Crear tramos según los depósitos encontrados
+        List<Tramo> tramosCreados = new ArrayList<>();
+        Double costoTotalEstimado = 0.0;
+        Double tiempoTotalEstimado = 0.0;
+        LocalDateTime fechaInicio = LocalDateTime.now().plusDays(1);
 
-        Tramo tramo = Tramo.builder()
-                .idRuta(ruta.getId())
-                .origenDescripcion(distancia.getOrigenDireccion())
-                .destinoDescripcion(distancia.getDestinoDireccion())
-                .distanciaKm(distanciaKm)
-                .estado("ESTIMADO")
-                .fechaInicioEstimada(LocalDateTime.now().plusDays(1))
-                .fechaFinEstimada(LocalDateTime.now().plusDays(1).plusHours(tiempoEstimadoHoras.longValue()))
-                .build();
-        tramoRepositorio.save(tramo);
+        if (depositosIntermedios.isEmpty()) {
+            // Sin depósitos intermedios: crear un solo tramo directo
+            log.info("No hay depósitos intermedios, creando tramo directo");
+            
+            DistanciaYDuracion distancia = calcularDistanciaTramo(
+                solicitud.getOrigenLatitud(), solicitud.getOrigenLongitud(),
+                solicitud.getOrigenDireccion(),
+                solicitud.getDestinoLatitud(), solicitud.getDestinoLongitud(),
+                solicitud.getDestinoDireccion()
+            );
 
+            Double costoEstimado = calculoTarifaServicio.calcularCostoEstimadoTramo(
+                distancia.getDistanciaKm(), 0.15);
 
+            Tramo tramo = Tramo.builder()
+                    .idRuta(ruta.getId())
+                    .origenDescripcion(distancia.getOrigenDireccion())
+                    .destinoDescripcion(distancia.getDestinoDireccion())
+                    .distanciaKm(distancia.getDistanciaKm())
+                    .costoEstimado(costoEstimado)
+                    .estado("ESTIMADO")
+                    .fechaInicioEstimada(fechaInicio)
+                    .fechaFinEstimada(fechaInicio.plusHours(distancia.getDuracionHoras().longValue()))
+                    .build();
+            
+            tramosCreados.add(tramoRepositorio.save(tramo));
+            costoTotalEstimado = costoEstimado;
+            tiempoTotalEstimado = distancia.getDuracionHoras();
+
+        } else {
+            // Con depósitos intermedios: crear múltiples tramos
+            log.info("Creando {} tramos con depósitos intermedios", depositosIntermedios.size() + 1);
+
+            // Crear lista de puntos de la ruta (origen -> depósitos -> destino)
+            List<PuntoRuta> puntosRuta = new ArrayList<>();
+            
+            // Punto origen
+            puntosRuta.add(new PuntoRuta(
+                solicitud.getOrigenDireccion(),
+                solicitud.getOrigenLatitud(),
+                solicitud.getOrigenLongitud()
+            ));
+            
+            // Depósitos intermedios
+            for (DepositoDTO deposito : depositosIntermedios) {
+                puntosRuta.add(new PuntoRuta(
+                    deposito.getDireccion() + " (" + deposito.getNombre() + ")",
+                    deposito.getLatitud(),
+                    deposito.getLongitud()
+                ));
+            }
+            
+            // Punto destino
+            puntosRuta.add(new PuntoRuta(
+                solicitud.getDestinoDireccion(),
+                solicitud.getDestinoLatitud(),
+                solicitud.getDestinoLongitud()
+            ));
+
+            // Crear un tramo por cada segmento
+            LocalDateTime fechaActual = fechaInicio;
+            
+            for (int i = 0; i < puntosRuta.size() - 1; i++) {
+                PuntoRuta puntoOrigen = puntosRuta.get(i);
+                PuntoRuta puntoDestino = puntosRuta.get(i + 1);
+
+                log.info("Creando tramo {}: {} -> {}", (i + 1), 
+                    puntoOrigen.descripcion, puntoDestino.descripcion);
+
+                DistanciaYDuracion distancia = calcularDistanciaTramo(
+                    puntoOrigen.latitud, puntoOrigen.longitud, puntoOrigen.descripcion,
+                    puntoDestino.latitud, puntoDestino.longitud, puntoDestino.descripcion
+                );
+
+                Double costoEstimado = calculoTarifaServicio.calcularCostoEstimadoTramo(
+                    distancia.getDistanciaKm(), 0.15);
+
+                LocalDateTime fechaFin = fechaActual.plusHours(distancia.getDuracionHoras().longValue());
+
+                Tramo tramo = Tramo.builder()
+                        .idRuta(ruta.getId())
+                        .origenDescripcion(distancia.getOrigenDireccion())
+                        .destinoDescripcion(distancia.getDestinoDireccion())
+                        .distanciaKm(distancia.getDistanciaKm())
+                        .costoEstimado(costoEstimado)
+                        .estado("ESTIMADO")
+                        .fechaInicioEstimada(fechaActual)
+                        .fechaFinEstimada(fechaFin)
+                        .build();
+                
+                tramosCreados.add(tramoRepositorio.save(tramo));
+                
+                costoTotalEstimado += costoEstimado;
+                tiempoTotalEstimado += distancia.getDuracionHoras();
+                
+                // Agregar tiempo de parada en depósito (1 hora)
+                fechaActual = fechaFin.plusHours(1);
+            }
+        }
+
+        log.info("Total de tramos creados: {}, Costo total: {}, Tiempo total: {}h",
+            tramosCreados.size(), costoTotalEstimado, tiempoTotalEstimado);
+
+        // Actualizar solicitud
         solicitud.setEstado("PROGRAMADA");
-        solicitud.setCostoEstimado(costoEstimado);
-        solicitud.setTiempoEstimado(tiempoEstimadoHoras);
+        solicitud.setCostoEstimado(costoTotalEstimado);
+        solicitud.setTiempoEstimado(tiempoTotalEstimado);
 
         return repositorio.save(solicitud);
+    }
+
+    /**
+     * Calcula la distancia y duración de un tramo
+     */
+    private DistanciaYDuracion calcularDistanciaTramo(
+            Double origenLat, Double origenLng, String origenDesc,
+            Double destinoLat, Double destinoLng, String destinoDesc) {
+        
+        if (origenLat != null && origenLng != null && destinoLat != null && destinoLng != null) {
+            return googleMapsService.calcularDistanciaPorCoordenadas(
+                origenLat, origenLng, destinoLat, destinoLng);
+        } else {
+            return googleMapsService.calcularDistanciaYDuracion(origenDesc, destinoDesc);
+        }
+    }
+
+    /**
+     * Clase auxiliar para representar un punto en la ruta
+     */
+    private static class PuntoRuta {
+        String descripcion;
+        Double latitud;
+        Double longitud;
+
+        PuntoRuta(String descripcion, Double latitud, Double longitud) {
+            this.descripcion = descripcion;
+            this.latitud = latitud;
+            this.longitud = longitud;
+        }
     }
 
     public List<ContenedorPendienteResponse> listarPendientes(String estadoFiltro, Long idContenedor) {
