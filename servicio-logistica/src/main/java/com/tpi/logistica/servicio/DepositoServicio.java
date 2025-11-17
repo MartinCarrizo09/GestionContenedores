@@ -17,7 +17,11 @@ import java.util.List;
 public class DepositoServicio {
 
     private static final Logger log = LoggerFactory.getLogger(DepositoServicio.class);
-    private static final Double RADIO_BUSQUEDA_KM = 100.0; // Radio de búsqueda en kilómetros
+    
+    // Constantes de configuración
+    private static final Double DISTANCIA_MINIMA_DIVISION = 700.0; // km - No dividir si es menor
+    private static final Double DISTANCIA_POR_TRAMO = 700.0; // km - Distancia máxima por tramo
+    private static final Double PORCENTAJE_DESVIACION_MAX = 10.0; // % - Máxima desviación permitida de la ruta directa
 
     private final RestTemplate restTemplate;
     private final MicroserviciosConfig microserviciosConfig;
@@ -28,7 +32,13 @@ public class DepositoServicio {
     }
 
     /**
-     * Busca depósitos intermedios en la ruta entre origen y destino
+     * Busca depósitos intermedios estratégicamente ubicados en la ruta.
+     * 
+     * REGLAS DE DIVISIÓN:
+     * - Distancia < 700 km → Tramo directo (sin depósitos)
+     * - Distancia 700-1400 km → 1 depósito intermedio (2 tramos)
+     * - Distancia 1400-2100 km → 2 depósitos intermedios (3 tramos)
+     * - Y así sucesivamente...
      */
     public List<DepositoDTO> buscarDepositosEnRuta(
             Double origenLat, Double origenLng,
@@ -36,6 +46,23 @@ public class DepositoServicio {
         
         log.info("Buscando depósitos intermedios entre ({},{}) y ({},{})",
                 origenLat, origenLng, destinoLat, destinoLng);
+
+        // Calcular distancia directa origen-destino
+        double distanciaDirecta = calcularDistancia(origenLat, origenLng, destinoLat, destinoLng);
+        
+        log.info("Distancia directa: {} km", distanciaDirecta);
+
+        // 🔧 REGLA 1: Si la distancia es menor a 700 km, no usar depósitos
+        if (distanciaDirecta < DISTANCIA_MINIMA_DIVISION) {
+            log.info("Distancia menor a 700 km, usando tramo directo sin depósitos");
+            return List.of();
+        }
+
+        // 🔧 REGLA 2: Calcular cuántos depósitos necesitamos
+        int cantidadDepositosNecesarios = (int) Math.floor(distanciaDirecta / DISTANCIA_POR_TRAMO);
+        
+        log.info("Se necesitan {} depósitos intermedios para una distancia de {} km", 
+                cantidadDepositosNecesarios, distanciaDirecta);
 
         try {
             // Obtener todos los depósitos disponibles
@@ -55,36 +82,67 @@ public class DepositoServicio {
                 return List.of();
             }
 
-            // Filtrar depósitos que estén en la ruta (dentro del radio de búsqueda)
-            List<DepositoDTO> depositosEnRuta = new ArrayList<>();
+            // 🔧 REGLA 3: Buscar depósitos candidatos que estén "en el camino"
+            List<DepositoCandidato> candidatos = new ArrayList<>();
             
             for (DepositoDTO deposito : todosLosDepositos) {
                 if (deposito.getLatitud() == null || deposito.getLongitud() == null) {
                     continue;
                 }
 
-                // Verificar si el depósito está entre origen y destino
-                if (estaEnRuta(
-                        origenLat, origenLng,
-                        destinoLat, destinoLng,
-                        deposito.getLatitud(), deposito.getLongitud())) {
+                double distanciaDesdeOrigen = calcularDistancia(
+                    origenLat, origenLng,
+                    deposito.getLatitud(), deposito.getLongitud()
+                );
+
+                double distanciaHaciaDestino = calcularDistancia(
+                    deposito.getLatitud(), deposito.getLongitud(),
+                    destinoLat, destinoLng
+                );
+
+                // Calcular desviación de la ruta directa
+                double distanciaTotal = distanciaDesdeOrigen + distanciaHaciaDestino;
+                double desviacion = distanciaTotal - distanciaDirecta;
+                double porcentajeDesviacion = (desviacion / distanciaDirecta) * 100;
+
+                // Solo considerar depósitos con desviación < 10%
+                if (porcentajeDesviacion <= PORCENTAJE_DESVIACION_MAX) {
+                    candidatos.add(new DepositoCandidato(
+                        deposito,
+                        distanciaDesdeOrigen,
+                        distanciaHaciaDestino,
+                        porcentajeDesviacion
+                    ));
                     
-                    depositosEnRuta.add(deposito);
-                    log.info("Depósito encontrado en ruta: {} ({}, {})",
-                            deposito.getNombre(), deposito.getLatitud(), deposito.getLongitud());
+                    log.debug("Depósito candidato: {} - Distancia desde origen: {} km, Desviación: {}%",
+                            deposito.getNombre(), distanciaDesdeOrigen, porcentajeDesviacion);
                 }
             }
 
-            log.info("Total de depósitos encontrados en ruta: {}", depositosEnRuta.size());
-            
-            // Ordenar depósitos por distancia desde el origen
-            depositosEnRuta.sort((d1, d2) -> {
-                double dist1 = calcularDistancia(origenLat, origenLng, d1.getLatitud(), d1.getLongitud());
-                double dist2 = calcularDistancia(origenLat, origenLng, d2.getLatitud(), d2.getLongitud());
-                return Double.compare(dist1, dist2);
-            });
+            if (candidatos.isEmpty()) {
+                log.warn("No se encontraron depósitos candidatos en la ruta");
+                return List.of();
+            }
 
-            return depositosEnRuta;
+            log.info("Total de depósitos candidatos: {}", candidatos.size());
+
+            // Ordenar candidatos por distancia desde el origen
+            candidatos.sort((c1, c2) -> Double.compare(c1.distanciaDesdeOrigen, c2.distanciaDesdeOrigen));
+
+            // 🔧 REGLA 4: Seleccionar depósitos distribuidos uniformemente
+            List<DepositoDTO> depositosSeleccionados = seleccionarDepositosEstrategicos(
+                candidatos, 
+                cantidadDepositosNecesarios, 
+                distanciaDirecta
+            );
+
+            log.info("Depósitos seleccionados: {}", depositosSeleccionados.size());
+            for (DepositoDTO deposito : depositosSeleccionados) {
+                log.info("  - {} ({}, {})", deposito.getNombre(), 
+                        deposito.getLatitud(), deposito.getLongitud());
+            }
+
+            return depositosSeleccionados;
 
         } catch (Exception e) {
             log.error("Error al buscar depósitos en ruta: {}", e.getMessage(), e);
@@ -93,32 +151,69 @@ public class DepositoServicio {
     }
 
     /**
-     * Verifica si un punto (depósito) está en la ruta entre origen y destino
+     * Selecciona los depósitos más estratégicos distribuidos uniformemente
+     * a lo largo de la ruta.
      */
-    private boolean estaEnRuta(
-            Double origenLat, Double origenLng,
-            Double destinoLat, Double destinoLng,
-            Double puntoLat, Double puntoLng) {
+    private List<DepositoDTO> seleccionarDepositosEstrategicos(
+            List<DepositoCandidato> candidatos,
+            int cantidadNecesaria,
+            double distanciaTotal) {
 
-        // Calcular distancia total de la ruta directa
-        double distanciaDirecta = calcularDistancia(origenLat, origenLng, destinoLat, destinoLng);
+        List<DepositoDTO> seleccionados = new ArrayList<>();
 
-        // Calcular distancia pasando por el punto (origen -> punto -> destino)
-        double distanciaConPunto = 
-                calcularDistancia(origenLat, origenLng, puntoLat, puntoLng) +
-                calcularDistancia(puntoLat, puntoLng, destinoLat, destinoLng);
+        if (cantidadNecesaria == 0 || candidatos.isEmpty()) {
+            return seleccionados;
+        }
 
-        // Si la diferencia es pequeña (dentro del margen), el punto está en la ruta
-        double margenPorcentaje = 0.15; // 15% de margen
-        double diferenciaPermitida = distanciaDirecta * margenPorcentaje;
+        if (cantidadNecesaria == 1) {
+            // Para 1 solo depósito, buscar el más cercano a la mitad del recorrido
+            double distanciaMitad = distanciaTotal / 2;
+            DepositoCandidato mejorCandidato = null;
+            double menorDiferencia = Double.MAX_VALUE;
 
-        boolean estaEnRuta = (distanciaConPunto - distanciaDirecta) <= diferenciaPermitida;
+            for (DepositoCandidato candidato : candidatos) {
+                double diferencia = Math.abs(candidato.distanciaDesdeOrigen - distanciaMitad);
+                if (diferencia < menorDiferencia) {
+                    menorDiferencia = diferencia;
+                    mejorCandidato = candidato;
+                }
+            }
 
-        log.debug("Verificando punto ({}, {}): distanciaDirecta={}km, distanciaConPunto={}km, diferencia={}km, permitida={}km, estaEnRuta={}",
-                puntoLat, puntoLng, distanciaDirecta, distanciaConPunto, 
-                (distanciaConPunto - distanciaDirecta), diferenciaPermitida, estaEnRuta);
+            if (mejorCandidato != null) {
+                seleccionados.add(mejorCandidato.deposito);
+            }
 
-        return estaEnRuta;
+        } else {
+            // Para múltiples depósitos, distribuir uniformemente
+            double intervalo = distanciaTotal / (cantidadNecesaria + 1);
+
+            for (int i = 1; i <= cantidadNecesaria; i++) {
+                double distanciaObjetivo = intervalo * i;
+                
+                // Buscar el depósito más cercano a esta distancia objetivo
+                DepositoCandidato mejorCandidato = null;
+                double menorDiferencia = Double.MAX_VALUE;
+
+                for (DepositoCandidato candidato : candidatos) {
+                    // Evitar depósitos ya seleccionados
+                    if (seleccionados.contains(candidato.deposito)) {
+                        continue;
+                    }
+
+                    double diferencia = Math.abs(candidato.distanciaDesdeOrigen - distanciaObjetivo);
+                    if (diferencia < menorDiferencia) {
+                        menorDiferencia = diferencia;
+                        mejorCandidato = candidato;
+                    }
+                }
+
+                if (mejorCandidato != null) {
+                    seleccionados.add(mejorCandidato.deposito);
+                }
+            }
+        }
+
+        return seleccionados;
     }
 
     /**
@@ -138,5 +233,23 @@ public class DepositoServicio {
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
         return RADIO_TIERRA_KM * c;
+    }
+
+    /**
+     * Clase interna para almacenar información de candidatos a depósitos
+     */
+    private static class DepositoCandidato {
+        DepositoDTO deposito;
+        double distanciaDesdeOrigen;
+        double distanciaHaciaDestino;
+        double porcentajeDesviacion;
+
+        public DepositoCandidato(DepositoDTO deposito, double distanciaDesdeOrigen,
+                                double distanciaHaciaDestino, double porcentajeDesviacion) {
+            this.deposito = deposito;
+            this.distanciaDesdeOrigen = distanciaDesdeOrigen;
+            this.distanciaHaciaDestino = distanciaHaciaDestino;
+            this.porcentajeDesviacion = porcentajeDesviacion;
+        }
     }
 }
